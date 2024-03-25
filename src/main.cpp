@@ -19,7 +19,25 @@ using namespace geode::prelude;
 
 class $modify(MyEditorUI, EditorUI) {
 
+private:
+    // object IDs for various object sizes
+    static constexpr int pixelObjID = 3097;
+    static constexpr int medPixelObjID = 3094;
+    static constexpr int bigPixelObjID = 3093;
+    static constexpr int largePixelObjID = 3092;
 
+    // black color channel
+    static constexpr int colourChannel = 1010;
+
+    // z order layering
+    static constexpr int zOrder = 1;
+
+    // size of the objects
+    static constexpr float objSize = 5.0f;
+
+    // scale used for moving between pixels
+    static constexpr float scale = 2.5f;
+public:
 	struct Pixel {
     uint8_t blue;
     uint8_t green;
@@ -92,20 +110,16 @@ class $modify(MyEditorUI, EditorUI) {
 	}
 
 	void CreateArt(std::string const& path){
-		// the id of the object, bacl colour channel, z order
-		int objID = 3097;
-		int colourChannel = 1010;
-		int zOrder = 1;
+		// image data values
 		int width;
 		int height;
 		int channels;
-		// gets the start pos and set size/scale
+		// start pos
 		float startX = m_selectedObject->m_realXPosition;
 		float startY = m_selectedObject->m_realYPosition;
-		float objSize = 5;
-		float scale = 2.5f;
 		// will contain the formated level string
 		std::string objString;
+		std::ostringstream objInLevel;
 		// loads the image from a path
     	unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
@@ -116,7 +130,6 @@ class $modify(MyEditorUI, EditorUI) {
 				int pixelCount = width * height;
 				// checks if the image is to big
 				if(pixelCount <= 40000){
-					std::stringstream objInLevel;
 					// loops through each pixel
 					for (int i = 0; i < pixelCount; ++i){
 						// calculate pos
@@ -128,24 +141,12 @@ class $modify(MyEditorUI, EditorUI) {
 							uint8_t red = data[pixelIndex];
 							uint8_t green = data[pixelIndex + 1];
 							uint8_t blue = data[pixelIndex + 2];
-							
 							// converts colours
 							std::string objColour = formatHsvToString(red, green, blue);
-							// the object id
-							objInLevel <<"1,3097,";
-							// x location
-							objInLevel << "2," << startX + (i % width) * scale << ",";
-							// y location
-							objInLevel << "3," << startY - (i / width) * scale << ",";
-							// sets the colour channel to black
-							objInLevel <<"21," << colourChannel;
-							// the scale 5 is 1X scale
-							objInLevel <<",32," << objSize;
-							// for hsv
-							objInLevel <<",41,1";
-							objInLevel <<",43," << objColour;
-							// z order
-							objInLevel << ",25," << zOrder << ";";
+							// adds the objects to a ostringstream
+							objInLevel << "1," << pixelObjID << ",2," << startX << ",3," << startY
+                           	<< ",21," << colourChannel << ",32," << objSize
+                           	<< ",41,1,43," << objColour << ",25," << zOrder << ";";
 						}
 						// when the end of the row is reached
 						if ((i + 1) % width == 0) {
@@ -158,8 +159,8 @@ class $modify(MyEditorUI, EditorUI) {
 							startX += scale;
 						}
 					}
-					objString = objInLevel.str();
 					// removes the last character
+					objString = objInLevel.str();
 					objString.pop_back();
 					// updates the editor
 					auto editorlayrn = LevelEditorLayer::get();
@@ -177,6 +178,7 @@ class $modify(MyEditorUI, EditorUI) {
 			}
 			stbi_image_free(data);
 	}
+
 	// creates the button that is used to open the pixel art importer
 	void createMoveMenu() {
     	EditorUI::createMoveMenu();
