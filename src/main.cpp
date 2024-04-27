@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <vector>
 #include <cmath>
+#include <utility>
+#include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -26,6 +28,9 @@ private:
     static constexpr int bigPixelObjID = 3093;
     static constexpr int largePixelObjID = 3092;
 
+	// object ID of old pixel object
+	static constexpr int oldPixelObjID = 917;
+
     // black color channel
     static constexpr int colourChannel = 1010;
 
@@ -36,12 +41,23 @@ private:
     static constexpr float objSize = 5.0f;
 
     // scale used for moving between pixels
-    static constexpr float scale = 2.5f;
+    static constexpr float scale = 5;
+
+	std::vector<std::vector<bool>> containsPixelObject;
+
+	struct OWOShape {
+        std::vector<std::pair<int, int>> offsets;
+        int id;
+    };
+
+    // initialize the objects, pls dont question the name
+    static const std::vector<OWOShape> OWOshapes;
+
 public:
 	struct Pixel {
-    uint8_t blue;
-    uint8_t green;
-    uint8_t red;
+    	uint8_t blue;
+    	uint8_t green;
+    	uint8_t red;
 	};
 
 	struct HSV {
@@ -109,76 +125,260 @@ public:
 		}
 	}
 
-	void CreateArt(std::string const& path){
-		// image data values
-		int width;
+	void CreateArt(const std::string& path) {
 		int height;
 		int channels;
-		// start pos
+		int width;
+		unsigned char *data = nullptr;
+		// gets the start position for where the art gets made
 		float startX = m_selectedObject->m_realXPosition;
 		float startY = m_selectedObject->m_realYPosition;
-		// will contain the formated level string
-		std::string objString;
+		// holds the added object in string format
 		std::ostringstream objInLevel;
-		// loads the image from a path
-    	unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-
-		    try {
-				// gets image data
-        		auto imageData = loadImage(path);
-				// gets the pixel count of the image
-				int pixelCount = width * height;
-				// checks if the image is to big
-				if(pixelCount <= 40000){
-					// loops through each pixel
-					for (int i = 0; i < pixelCount; ++i){
-						// calculate pos
-						int pixelIndex = i * channels;
-						uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
-						// checks if there is a pixel (mainly for png)
-						if(alpha != 0){
-
-							uint8_t red = data[pixelIndex];
-							uint8_t green = data[pixelIndex + 1];
-							uint8_t blue = data[pixelIndex + 2];
-							// converts colours
-							std::string objColour = formatHsvToString(red, green, blue);
-							// adds the objects to a ostringstream
-							objInLevel << "1," << pixelObjID << ",2," << startX << ",3," << startY
-                           	<< ",21," << colourChannel << ",32," << objSize
-                           	<< ",41,1,43," << objColour << ",25," << zOrder << ";";
-						}
-						// when the end of the row is reached
-						if ((i + 1) % width == 0) {
-							// reset x
-							startX = m_selectedObject->m_realXPosition;
-							// move down
-							startY -= scale;
-						} else {
-							// move right
-							startX += scale;
+		std::string objString;
+		try {
+			// gets image data
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			// checks if the image data was fetched
+			if (!data) {
+				throw std::runtime_error("Failed to load image.");
+			}
+			// gets the settings 
+			auto sizeLimitValue = Mod::get()->getSettingValue<bool>("Disable-limit");
+			auto useScaling = Mod::get()->getSettingValue<bool>("Enable-Scale");
+			auto useBasicOpt = Mod::get()->getSettingValue<bool>("Enable-Basic-optimise");
+			auto useOldObject = Mod::get()->getSettingValue<bool>("Use-OlderObjects");
+			// sets the pixel object id
+			int currentObjID = pixelObjID;
+			if(useOldObject){
+				currentObjID = oldPixelObjID;
+			}
+			// checks the size or if the size limit is on
+			if ((width * height > 40000) && !sizeLimitValue) {
+				throw std::runtime_error(
+				"Image cannot be bigger than 200 by 200. Change this in the settings for this mod.");
+			}
+			// contains the pixels that have been placed
+			std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
+			// loops through image data
+			for (int y = height - 1; y >= 0; --y) {
+				for (int x = 0; x < width;) {
+					// gets the index for the current pixel being looked at
+					int pixelIndex = (y * width + x) * channels;
+					// gets alpha amd checks if there is a pixel
+					uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+					if (placed[y][x] || alpha == 0) {
+						x++;
+						continue;
+					}
+					int xStretch = 0;
+					int yStretch = 0;
+					// checks if the old pixel is not being used or basic op is on
+					if(useBasicOpt && !useOldObject){
+						// sets a target colour for comparing
+						uint8_t targetColour[3] = {data[pixelIndex], data[pixelIndex + 1], 
+								data[pixelIndex + 2]};
+						// loops through the different shapes (these represent GD objects)
+						for (const auto& shape : OWOshapes){
+							bool canPlace = true;
+							// goes through the possible locations these shapes could fit
+							for (const auto& offset : shape.offsets){
+								int newX = x + offset.first;
+								int newY = y - offset.second;
+								// makes sure its not out of bounds
+								if (newY < 0 || newY >= height || newX < 0 || newX >= width) {
+									canPlace = false;
+									break;
+								}
+								// makes a new pixel index for the pixel being compared
+								int newPixelIndex = (newY * width + newX) * channels;
+								uint8_t newAlpha = (channels == 4) ? data[newPixelIndex + 3] : 255;
+								// checks if the new pixel is the same colour as the original pixel
+								if (data[newPixelIndex] != targetColour[0] ||
+								data[newPixelIndex + 1] != targetColour[1] ||
+								data[newPixelIndex + 2] != targetColour[2] ||
+								newAlpha == 0) {
+									canPlace = false;
+									break;
+								}
+							}
+							// checks if scale opt is checked or the shape is 0
+							if (shape.id == 0 && canPlace && useScaling) {
+								// new pixel indexes for the pixels offset y and x direction
+								int tempPixelIndexX = (y * width + x + 1) * channels;
+								int tempPixelIndexY = ((y - 1) * width + x) * channels;
+								// prioritises x over y
+								if(data[tempPixelIndexX] == targetColour[0] 
+								&& data[tempPixelIndexX + 1] == targetColour[1] 
+								&& data[tempPixelIndexX + 2] == targetColour[2] 
+								&& !placed[y][x + 1]){
+									for (int currentX = x; currentX < width; ++currentX) {
+										int currentPixelIndex = (y * width + currentX) * channels;
+										uint8_t newAlpha = (channels == 4) ? data[currentPixelIndex + 3] : 255;
+										if (data[currentPixelIndex] == targetColour[0] &&
+											data[currentPixelIndex + 1] == targetColour[1] &&
+											data[currentPixelIndex + 2] == targetColour[2] &&
+											!placed[y][currentX] && newAlpha != 0) {
+											xStretch++;
+											placed[y][currentX] = true;
+										} else {
+											break;
+										}
+									}
+								}else if(data[tempPixelIndexY] == targetColour[0] 
+								&& data[tempPixelIndexY + 1] == targetColour[1] 
+								&& data[tempPixelIndexY + 2] == targetColour[2] 
+								&& !placed[y - 1][x]){
+									for (int currentY = y; currentY >= 0; --currentY) {
+										int currentPixelIndex = (currentY * width + x) * channels;
+										uint8_t newAlpha = (channels == 4) ? 
+												data[currentPixelIndex + 3] : 255;
+										if (data[currentPixelIndex] == targetColour[0] &&
+											data[currentPixelIndex + 1] == targetColour[1] &&
+											data[currentPixelIndex + 2] == targetColour[2] &&
+											!placed[currentY][x] && newAlpha != 0) {
+											yStretch++;
+											placed[currentY][x] = true;
+										} else {
+											break;
+										}
+									}
+								}
+								// does the same checks but for the second shape
+							}else if(shape.id == 1 && canPlace && useScaling){
+								// this section doesnt work so just ignore it
+								bool stretchX = true;
+								for (int i = 0; i <= 1; ++i) {
+									int pixelIndexX = ((y - i) * width + x + 3) * channels;
+									if (!(data[pixelIndexX] == targetColour[0] &&
+										data[pixelIndexX + 1] == targetColour[1] &&
+										data[pixelIndexX + 2] == targetColour[2]) ||
+										placed[y - i][x + 3]) {
+										stretchX = false;
+										break;
+									}
+									else{
+										placed[y - i][x + 3] = true;
+										xStretch++;
+									}
+								}
+								if(stretchX){
+									for (int offsetX = 4; offsetX < width - x; ++offsetX) {
+										bool rowMatch = true;
+										for (int i = 0; i <= 1; ++i) {
+											int pixelIndexX = ((y - i) * width + x + offsetX) * channels;
+											if (!(data[pixelIndexX] == targetColour[0] &&
+											data[pixelIndexX + 1] == targetColour[1] &&
+											data[pixelIndexX + 2] == targetColour[2]) ||
+											placed[y - i][x + offsetX]) {
+												rowMatch = false;
+												break;
+											}
+											else{
+												placed[y - i][x + offsetX] = true;
+											}
+										}
+										if(rowMatch == false){
+											break;
+										}
+										else{
+											xStretch++;
+										}
+									}
+								}
+							}
+							// checks if an object can be placed
+							if (canPlace) {
+								// formats the colours so they are GD format
+								std::string objColour = formatHsvToString(data[pixelIndex], 
+											data[pixelIndex + 1], data[pixelIndex + 2]);
+								// for the scaling based opt it sets the offsets as true if they exist
+								for (const auto& offset : shape.offsets) {
+									placed[y - offset.second][x + offset.first] = true;
+								}
+								// gets the current object id depending the shape
+								currentObjID = shape.id == 1 ? medPixelObjID : (shape.id == 2 ? 
+								bigPixelObjID : (shape.id == 3 ? largePixelObjID : pixelObjID));
+								// figures out the scale
+								float currentScale = shape.id == 1 ? 2.5f : (shape.id == 2 ? 5.0f : 
+								(shape.id == 3 ? 12.5f : 0));
+								// calculates the size
+								int currentSize = objSize * (shape.id + 1);
+								// shape 3 is much bigger than the others so I set it here
+								if(shape.id == 3){
+									currentSize = 30;
+								}
+								// for the scaling I calculated the x and y scale
+								float currentXSize = currentSize * xStretch;
+								float currentYSize = currentSize * yStretch;
+								// checks if stretching has occured on x
+								if(xStretch > 0){
+									objInLevel << "1," << currentObjID << ",2," << ((startX + x * scale + currentScale) + 
+									(xStretch * 0.5 * scale - 2.5f)) << ",3," <<
+									(startY - y * scale + currentScale) << ",21," << colourChannel <<
+									",41,1,43," << objColour << ",25," << zOrder << ",128," << 
+									currentXSize  << ",129," << currentSize << ";";
+								}
+								// checks if stretching has occured on y
+								else if(yStretch > 0){
+									objInLevel << "1," << currentObjID << ",2," << 
+									(startX + x * scale + currentScale) << ",3," << ((startY - y * scale + currentScale)
+									 + (yStretch * 0.5 * scale - 2.5f)) << ",21," << colourChannel << ",41,1,43," 
+									 << objColour << ",25," << zOrder << ",128," << currentSize  
+									 << ",129," << currentYSize << ";";
+								}
+								// No stretching
+								else{
+									objInLevel << "1," << currentObjID << ",2," << (startX + x * scale + currentScale) 
+									<< ",3," << (startY - y * scale + currentScale) << ",21," << colourChannel <<
+									",41,1,43," << objColour << ",25," << zOrder << ",32," << currentSize << ";";
+								}
+								break;
+							}
 						}
 					}
-					// removes the last character
-					objString = objInLevel.str();
-					objString.pop_back();
-					// updates the editor
-					auto editorlayrn = LevelEditorLayer::get();
-					editorlayrn->createObjectsFromString(objString.c_str(), true, true);
-					// it worked
-					FLAlertLayer::create("Success!", "<cg>Art was imported</c>", "OK")->show();
-				}else{
-					// did not work ):
-					FLAlertLayer::create("Error!", "<cr>Image is too big</c>", "OK")->show();
+					// if no opt is used
+					else{
+						std::string objColour = formatHsvToString(data[pixelIndex], 
+									data[pixelIndex + 1], data[pixelIndex + 2]);
+						placed[y][x] = true;
+						if(useOldObject){
+							objInLevel << "1," << currentObjID << ",2," << startX + x * (scale + 2.5f) << ",3," <<
+							startY - y * (scale + 2.5f) << ",21," << colourChannel << ",41,1,43," <<
+							objColour << ",25," << zOrder << ",32," << objSize / 5 << ";";
+						}
+						else{
+							objInLevel << "1," << currentObjID << ",2," << (startX + x * scale) 
+									<< ",3," << (startY - y * scale) << ",21," << colourChannel <<
+									",41,1,43," << objColour << ",25," << zOrder << ",32," << objSize << ";";
+						}
+					}
+					// skips checking pixels when x stretch is used
+					x += std::max(1, xStretch);
 				}
-
-			} catch (std::exception const& e) {
-				// it failed ):
-				FLAlertLayer::create("Error", "<cr>File not valid</c>", "OK")->show();
 			}
-			stbi_image_free(data);
+			// removes the last ;
+			objString = objInLevel.str();
+			objString.pop_back();
+			// adds the new objects to the level and then prompts the user
+			auto editorLayer = LevelEditorLayer::get();
+    		editorLayer->createObjectsFromString(objString.c_str(), true, true);
+			FLAlertLayer::create("Success!", std::to_string(OWOshapes.size()), "OK")->show();
+			if (data) {
+				stbi_image_free(data);
+				data = nullptr;
+			}
+			// if the image did not work
+		} catch (const std::exception& e) {
+			if (data) {
+				stbi_image_free(data);
+			}
+			// used for testing
+			std::string errorMessage = e.what();
+			FLAlertLayer::create("Error", "did not work", "OK")->show();
+		}
 	}
-
+	
 	// creates the button that is used to open the pixel art importer
 	void createMoveMenu() {
     	EditorUI::createMoveMenu();
@@ -237,6 +437,8 @@ public:
 		if (h < 0.0f)
 			// stop it being negative
 			h += 360.0f;
+		// converts colours to the gd format of -180 to 180
+		h = fmodf(h + 180.0f, 360.0f) - 180.0f;
 	}
 
 	// makes hsv a string
@@ -248,6 +450,48 @@ public:
 		// returns the formated data
 		return std::to_string(h) + "a" + std::to_string(s)
 		 + "a" + std::to_string(v) + "a" + "1a1";
+	}
+};
+
+const std::vector<MyEditorUI::OWOShape> MyEditorUI::OWOshapes = {
+    // LargePixelObjID - checks this first as it's a big boy
+    {
+        {
+            {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0},
+            {0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1},
+            {0, 2}, {1, 2}, {2, 2}, {3, 2}, {4, 2}, {5, 2},
+            {0, 3}, {1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3},
+            {0, 4}, {1, 4}, {2, 4}, {3, 4}, {4, 4}, {5, 4},
+            {0, 5}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {5, 5},
+        },
+        3
+    },
+
+	// bigPixelObjID
+	{
+		{
+			{0, 0}, {1, 0}, {2, 0},
+			{0, 1}, {1, 1}, {2, 1},
+			{0, 2}, {1, 2}, {2, 2}
+		},
+		2
+	},
+
+	// medPixelObjID
+	{
+		{
+			{0, 0}, {1, 0},
+			{0, 1}, {1, 1}
+		},
+		1
+	},
+
+	// PixelObjID
+	{
+		{
+			{0, 0}
+		},
+		0
 	}
 };
 
