@@ -1,3 +1,8 @@
+## v1.3.0
+
+ * Ported to 2.206.
+ * Other small fixes.
+
 ## v1.2.0
 
  * Fixed issue with colours being incorrect.

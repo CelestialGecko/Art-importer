@@ -1,10 +1,10 @@
 {
-	"geode": "2.0.0-beta.22",
+"geode": "3.1.1",
 	"gd": {	
-		"win": "2.204",
-		"android": "2.205"
+		"win": "2.206",
+		"android": "2.206"
 	},
-	"version": "v1.2.0",
+	"version": "v1.3.0",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
@@ -41,5 +41,10 @@
 			"type": "bool",
 			"default": false
 		}
-	}
+	},
+	"tags": [
+        "editor",
+        "offline",
+		"utility"
+    ]
 }
