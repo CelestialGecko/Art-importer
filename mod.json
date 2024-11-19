@@ -1,14 +1,21 @@
 {
-	"geode": "3.1.1",
+	"geode": "4.0.0",
 	"gd": {	
-		"win": "2.206",
-		"android": "2.206"
+        "win": "2.2074",
+        "mac": "2.2074",
+        "android": "2.2074",
+        "ios": "2.2074"
 	},
-	"version": "v1.3.0",
+	"version": "v1.3.1",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
-	"description": "This will import pixel art from an image file into the level editor",
+	"description": "This will import pixel art",
+	"links": {
+        "community": "https://discord.gg/cdYcFRgASf",
+        "source": "https://github.com/CelestialGecko/Art-importer",
+		"homepage": "https://www.youtube.com/@Geck"
+    },
 	"resources": {
 		"spritesheets":{
 			"ImageButton": [
