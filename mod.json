@@ -1,21 +1,21 @@
 {
-	"geode": "4.0.0",
+	"geode": "4.4.0",
 	"gd": {	
         "win": "2.2074",
         "mac": "2.2074",
         "android": "2.2074",
         "ios": "2.2074"
 	},
-	"version": "v1.3.1",
+	"version": "v1.4.0",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
 	"description": "This will import pixel art",
 	"links": {
-        "community": "https://discord.gg/cdYcFRgASf",
-        "source": "https://github.com/CelestialGecko/Art-importer",
+		"community": "https://discord.gg/nS5HFrbJ6y",
+		"source": "https://github.com/CelestialGecko/Art-importer",
 		"homepage": "https://www.youtube.com/@Geck"
-    },
+	},
 	"resources": {
 		"spritesheets":{
 			"ImageButton": [
@@ -23,35 +23,61 @@
 			]
 		}
 	},
-	"settings":{
-		"Use-OlderObjects":{
-			"name" : "Use 2.1 pixels",
+	"settings": {
+		"Pixels": {
+			"name": "Pixels",
+			"description": "Related to pixels.",
+			"type": "title"
+		},
+		"Use-OlderObjects": {
+			"name": "Use 2.1 pixels",
 			"description": "Will use the old 2.1 pixel object instead of the newer one.\nThis will <cr>not</c> work with the basic optimisation.",
 			"type": "bool",
 			"default": false
 		},
-		"Enable-Basic-optimise":{
-			"name" : "Optimise art",
+		"Colour-channel": {
+			"name": "Colour channel",
+			"description": "The colour channel that the pixels are put on.\nI do <cr>not</c> recommend changing this.",
+			"type": "int",
+			"default": 1010,
+			"min": 1,
+			"max": 1020
+		},
+		"Optimise": {
+			"name": "Optimisation",
+			"description": "Related to optimising the art.",
+			"type": "title"
+		},
+		"Enable-Basic-optimise": {
+			"name": "Basic optimise art",
 			"description": "Optimises the art using 4 different objects of different sizes.",
 			"type": "bool",
 			"default": true
 		},
-		"Enable-Scale":{
-			"name" : "Use scaling",
+		"Enable-Scale": {
+			"name": "Optimise with scaling",
 			"description": "Uses scaling to optimise the pixel art.\nThis is still in development and will <cr>not</c> work for most images.\nOnly works if <cr>optimise art</c> is checked.",
 			"type": "bool",
 			"default": false
 		},
-		"Disable-limit":{
-			"name" : "Remove size limit",
+		"Size-limit": {
+			"name": "Size limit",
+			"description": "Number of pixels able to be imported.",
+			"type": "int",
+			"default": 40000,
+			"min": 100,
+			"max": 80000
+		},
+		"Disable-limit": {
+			"name": "Remove size limit",
 			"description": "Will remove the default size limit for images that can be imported.\nCan cause <cr>crashes</c> if the image is too big so is not recommended.",
 			"type": "bool",
 			"default": false
 		}
 	},
 	"tags": [
-        "editor",
-        "offline",
-		"utility"
+      "editor",
+      "offline",
+			"utility"
     ]
 }
