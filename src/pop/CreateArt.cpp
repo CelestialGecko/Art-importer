@@ -2,30 +2,28 @@
 #include "CreateArt.h"
 
 CreateArt::~CreateArt() {
+
 }
 
-void CreateArt::importArt(cocos2d::CCObject* sender) {
+void CreateArt::importArt() {
     // picks a file then will listen for when the event is done
     utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
         [this](Result<std::filesystem::path>* result) {
             // no file selected
-            if (!result->isOk()) {
-                FLAlertLayer::create("Error", "Failed to choose file", "OK")->show();
-                return;
+            if (result->isOk()) {
+                // gets the path as a string
+                std::string pathStr = result->unwrap().string();
+                placeArt(pathStr);
             }
-            // gets the path as a string
-            std::string pathStr = result->unwrap().string();
-            placeArt(pathStr);
         }
     );
 }
 
 // places the art, will choose a specific method base on settings
 void CreateArt::placeArt(const std::string &p) {
-    FLAlertLayer::create("owo", "It worked", "OK")->show();
     // a simple optimisation that makes use of the different sized pixels
     if (useBasicOptimization && !useOldPixel) {
-		simpleImport(p);
+
     }
     // scales the objects on the x and y to fit the area
     else if (useScale) {
@@ -33,7 +31,7 @@ void CreateArt::placeArt(const std::string &p) {
     }
     // just places the pixels without any fancy optimisation
     else {
-
+        simpleImport(p);
     }
 }
 
@@ -103,6 +101,8 @@ void CreateArt::simpleImport(const std::string& p) {
             stbi_image_free(data);
             data = nullptr;
         }
+        // this is too scary for me not to check
+        closeMenu();
     }
     catch (const std::exception& e) {
         if (data) {
@@ -130,9 +130,9 @@ void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) {
 // faster version that I made for university
 void CreateArt::RGBtoHSV(float& r, float& g, float& b) {
     // need them to be between 1 and 0
-    r *= nom;
-    g *= nom;
-    b *= nom;
+    r /= 255.0f;
+    g /= 255.0f;
+    b /= 255.0f;
     // gets the largest, smallest and the difference
     float max = (std::max)(r, (std::max)(g, b));
     float min = (std::min)(r, (std::min)(g, b));

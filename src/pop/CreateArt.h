@@ -34,8 +34,6 @@ private:
     // scale used for moving between pixels
     static constexpr float scale = 5;
 
-    static constexpr float nom = 1.0f / 255.0f;
-
     // colours inside the pixel
     uint8_t blue = 0;
     uint8_t green = 0;
@@ -44,10 +42,13 @@ private:
     // selected object
     GameObject* obj = nullptr;
 
+    // closing the menu after complete
+    std::function<void()> closeMenu = nullptr;
+
     // settings
     bool limitSize = Mod::get()->getSettingValue<bool>("Disable-limit");
     int sizeLimit = Mod::get()->getSettingValue<int>("Size-limit");
-    int colourChannel = Mod::get()->getSettingValue<bool>("Colour-channel");
+    int colourChannel = Mod::get()->getSettingValue<int>("Colour-channel");
 	bool useOldPixel = Mod::get()->getSettingValue<bool>("Use-OlderObjects");
 	bool useScale = Mod::get()->getSettingValue<bool>("Enable-Scale");
 	bool useBasicOptimization = Mod::get()->getSettingValue<bool>("Enable-Basic-optimise");
@@ -63,9 +64,10 @@ public:
     CreateArt() {}
 	~CreateArt();
 
-    void importArt(cocos2d::CCObject* sender);
+    void importArt();
 	void placeArt(const std::string &p);
 
     // setters
     void setSelectedObject(GameObject* o) { obj = o; }
+    void setCloseMenu(std::function<void()> c) { closeMenu = c; }
 };

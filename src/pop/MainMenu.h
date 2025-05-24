@@ -9,10 +9,11 @@ using namespace geode::prelude;
 class MainMenu : public geode::Popup<CCArray*, CreateArt*> {
 private:
     CreateArt* artPointer = nullptr;
+	bool imported = false;
 protected:
     bool setup(CCArray* startObj, CreateArt* artImposter) override;
     // runs the importer
-    void importArt(CCObject* sender) { artPointer->importArt(sender); }
+    void importArt(CCObject* sender);
     // lets user change the settings of the mod
     void openSettings(CCObject* sender);
     // opens info
@@ -20,6 +21,5 @@ protected:
     // temp - restart the game
 	void restartGame(CCObject* sender) {game::restart();}
 public:
-	~MainMenu() { delete artPointer; }
     static MainMenu* create(CCArray* startObj, CreateArt* artImposter);
 };
