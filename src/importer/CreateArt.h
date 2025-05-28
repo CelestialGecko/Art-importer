@@ -27,17 +27,14 @@ private:
     static constexpr int largePixelObjID = 3092;
     // object ID of old pixel object
     static constexpr int oldPixelObjID = 917;
+    // large old pixel
+	static constexpr int oldLargePixelObjID = 211;
     // z order layering
     static constexpr int zOrder = 1;
     // size of the objects
     static constexpr float objSize = 5.0f;
     // scale used for moving between pixels
     static constexpr float scale = 5;
-
-    // colours inside the pixel
-    uint8_t blue = 0;
-    uint8_t green = 0;
-    uint8_t red = 0;
 
     // selected object
     GameObject* obj = nullptr;
@@ -53,26 +50,30 @@ private:
 	int tolerance = Mod::get()->getSettingValue<int>("Tolerance");
 	std::string basic = Mod::get()->getSettingValue<std::string>("Optimise-Type");
 
+    // places the art with the path
+    void placeArt(const std::string& p);
+
     // helper methods - methods of importing the art
     void simpleImport(const std::string& p);
 	void basicOptimiseImport(const std::string& p);
 	void scaleOptimiseImport(const std::string& p);
 
     // other helpers
-    void formatHSV(float red, float green, float blue, std::string &objColour);
-    void RGBtoHSV(float& r, float& g, float& b);
-    int bestFit(std::vector<std::vector<bool>> &p, unsigned char* &data, int x, int y, int ch, int wid, int hi);
-	bool comparePixels(unsigned char*& data, int p1, int p2);
-    int scalePixX(std::vector<std::vector<bool>>& p, unsigned char*& data, int x, int y, int ch, int wid, int hi);
-	int scalePixY(std::vector<std::vector<bool>>& p, unsigned char*& data, int x, int y, int ch, int wid, int hi, int xScale);
+    void formatHSV(float red, float green, float blue, std::string& objColour) const;
+    void RGBtoHSV(float& r, float& g, float& b) const;
+    int bestFit(std::vector<std::vector<bool>> &p, const unsigned char* data, int x, int y, int ch, int wid, int hi);
+    bool comparePixels(const unsigned char*& data, int p1, int p2) const;
+    int scalePixX(std::vector<std::vector<bool>>& p, const unsigned char* data, int x, int y, int ch, int wid, int hi);
+	int scalePixY(std::vector<std::vector<bool>>& p, const unsigned char* data, int x, int y, int ch, int wid, int hi, int xScale);
 
 public:
     CreateArt() {}
-	~CreateArt();
+    ~CreateArt() {}
 
+    // importing the art
     void importArt();
-	void placeArt(const std::string &p);
 
+    // changes the settings before the art is imported
     void updateSettings();
 
     // setters

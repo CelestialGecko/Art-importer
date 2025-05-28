@@ -14,12 +14,12 @@ protected:
     bool setup(CCArray* startObj, CreateArt* artImposter) override;
     // runs the importer
     void importArt(CCObject* sender);
-    // lets user change the settings of the mod
-    void openSettings(CCObject* sender);
     // opens info
     void openInfo(CCObject* sender);
+    // lets user change the settings of the mod
+    void openSettings(CCObject* sender) { openSettingsPopup(Mod::get()); }
     // temp - restart the game
-	void restartGame(CCObject* sender) {game::restart();}
+    //void restartGame(CCObject* sender) { game::restart(); }
 public:
     static MainMenu* create(CCArray* startObj, CreateArt* artImposter);
 };

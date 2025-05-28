@@ -1,10 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "CreateArt.h"
 
-CreateArt::~CreateArt() {
-
-}
-
 void CreateArt::importArt() {
     // picks a file then will listen for when the event is done
     utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
@@ -12,7 +8,7 @@ void CreateArt::importArt() {
             // no file selected
             if (result->isOk()) {
                 // gets the path as a string
-                std::string pathStr = result->unwrap().string();
+                const std::string pathStr = result->unwrap().string();
                 placeArt(pathStr);
             }
         }
@@ -35,13 +31,14 @@ void CreateArt::placeArt(const std::string &p) {
     }
 }
 
+// just a normal import with none of this woke optimisation stuff
 void CreateArt::simpleImport(const std::string& p) {
     int height;
     int channels;
     int width;
     unsigned char* data = nullptr;
-    float startX = obj->getPositionX();
-    float startY = obj->getPositionY();
+    const float startX = obj->getPositionX();
+    const float startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
 
@@ -51,7 +48,7 @@ void CreateArt::simpleImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -63,9 +60,9 @@ void CreateArt::simpleImport(const std::string& p) {
         for (int y = height - 1; y >= 0; --y) {
             for (int x = 0; x < width; ++x) {
                 // gets the index for the current pixel being looked at
-                int pixelIndex = (y * width + x) * channels;
+                const int pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
                 std::string objColour;
@@ -87,7 +84,7 @@ void CreateArt::simpleImport(const std::string& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        auto editorLayer = LevelEditorLayer::get();
+        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         if (data) {
@@ -106,13 +103,14 @@ void CreateArt::simpleImport(const std::string& p) {
     }
 }
 
+// basic optimisation using 4 different pixel objects from the pixel art tab
 void CreateArt::basicOptimiseImport(const std::string& p) {
     int height;
     int channels;
     int width;
     unsigned char* data = nullptr;
-    float startX = obj->getPositionX();
-    float startY = obj->getPositionY();
+    const float startX = obj->getPositionX();
+    const float startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
 
@@ -122,7 +120,7 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -132,24 +130,25 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
         }
         // used to determine if a pixel should be placed
         std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
+
         for (int y = height - 1; y >= 0; --y) {
             for (int x = 0; x < width; ++x) {
 				if (placed[y][x]) continue;
                 // gets the index for the current pixel being looked at
-                int pixelIndex = (y * width + x) * channels;
+                const int pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
 
                 // decides which pixel fits the best
-				int pixelType = bestFit(placed, data, x, y, channels, width, height);
+				const int pixelType = bestFit(placed, data, x, y, channels, width, height);
 
                 // gets the colour in GD format
                 std::string objColour;
                 formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
 
-                // places the objects
+                // places the object depending on which one works the best
                 switch (pixelType) {
                 case 3097:
                     objInLevel << "1," << pixelType << ",2," << startX + x * scale << ",3," <<
@@ -178,7 +177,7 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        auto editorLayer = LevelEditorLayer::get();
+        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         if (data) {
@@ -203,8 +202,8 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
     int channels;
     int width;
     unsigned char* data = nullptr;
-    float startX = obj->getPositionX();
-    float startY = obj->getPositionY();
+    const float startX = obj->getPositionX();
+    const float startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
     try {
@@ -213,7 +212,7 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -227,32 +226,36 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
             for (int x = 0; x < width; ++x) {
                 if (placed[y][x]) continue;
                 // gets the index for the current pixel being looked at
-                int pixelIndex = (y * width + x) * channels;
+                const int pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
 
+                // gets the 2 offsets used to determine the size and pixel pos
 				int scaleX = scalePixX(placed, data, x, y, channels, width, height);
+				int scaleY = scalePixY(placed, data, x, y, channels, width, height, scaleX);
 
                 // gets the colour in GD format
                 std::string objColour;
                 formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
 
+                const float xSize = scale * scaleX;
+                const float ySize = scale * scaleY;
+
+                // places the pixel that was chosen
                 if (useOldPixel) {
-                    objInLevel << "1," << oldPixelObjID << ",2," << startX + x * (scale + 2.5f) << ",3," <<
-                        startY - y * (scale + 2.5f) << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",128," << objSize / 5
-                        << ",129," << objSize / 5 << ";";
+                    objInLevel << "1," << oldLargePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
+                        startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
+                        objColour << ",25," << zOrder << ",128," << (objSize / 30) * scaleX
+                        << ",129," << (objSize / 30) * scaleY << ";";
                 }
                 else {
-					float xSize = scale * scaleX;
-                    FLAlertLayer::create("Success!", std::to_string(scaleX), "OK")->show();
 
                     objInLevel << "1," << largePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
-                        startY - y * scale << ",21," << colourChannel << ",41,1,43," <<
+                        startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
                         objColour << ",25," << zOrder << ",128," << xSize
-                        << ",129," << objSize << ";";
+                        << ",129," << ySize << ";";
                 }
             }
         }
@@ -261,7 +264,7 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        auto editorLayer = LevelEditorLayer::get();
+        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         if (data) {
@@ -281,15 +284,18 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
 }
 
 // scales on the x
-int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, unsigned char*& data, int px, int py, int ch, int wid, int hi) {
+int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi) {
     const int refPix = (py * wid + px) * ch;
 	bool fits = true;
 	int off = 1;
+    // will loop until it cant place an extra pixel or reaches the width
     do {
+        // checks if on the width
         if (px + off >= wid) {
 			fits = false;
         }
         else {
+            // compares and then offsets if pixel is close enough
             if (comparePixels(data, refPix, (py * wid + px + off) * ch)) {
                 p[py][px + off] = true;
                 ++off;
@@ -299,18 +305,44 @@ int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, unsigned char*& data
             }
         }
     } while (fits);
+    //sets the original as placed
 	p[py][px] = true;
 	return off;
 }
 
 // scales on the y
-int CreateArt::scalePixY(std::vector<std::vector<bool>>& p, unsigned char*& data, int px, int py, int ch, int wid, int hi, int xScale) {
+int CreateArt::scalePixY(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi, int xScale) {
     const int refPix = (py * wid + px) * ch;
-
+	bool fits = true;
+	int off = 1;
+    // will loop until out of range or is unable to place another layer
+	do {
+		if (py - off <= 0) {
+			fits = false;
+		}
+        else {
+            // loops through the pixels for a given row
+            // if 1 pixel doesnt match then this layer cannot be filled
+            for (int i = 0; i < xScale && fits; ++i) {
+                if (!comparePixels(data, refPix, ((py - off) * wid + px + i) * ch)) {
+                    fits = false;
+                }
+            }
+			// if it fits then we mark all the spaces as placed
+            // we also move the offset down to check the next row
+            if (fits) {
+                for (int i = 0; i < xScale; ++i) {
+                    p[py - off][px + i] = true;
+                }
+                ++off;
+            }
+        }
+	} while (fits);
+    return off;
 }
 
 // finds the best pixel object to reduce object count
-int CreateArt::bestFit(std::vector<std::vector<bool>>& p, unsigned char*& data, int px, int py, int ch, int wid, int hi) {
+int CreateArt::bestFit(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi) {
     const int referencePixel = (py * wid + px) * ch;
     // storing the variations for the pixels in a array
     const std::vector<int> pixelSizes = { 1, 2, 3, 6 };
@@ -339,8 +371,8 @@ int CreateArt::bestFit(std::vector<std::vector<bool>>& p, unsigned char*& data, 
         // if the larger pixel doesnt fit then it will place the next best one
         if (!fits) {
             // gets the pixel that will be placed, if this is the first loop then we just place the small one
-            int sizeP = (i == 0) ? 1 : pixelSizes[i - 1];
-            int returnID = (i == 0) ? pixelObjID : pixelObjIDs[i - 1];
+            const int sizeP = (i == 0) ? 1 : pixelSizes[i - 1];
+            const int returnID = (i == 0) ? pixelObjID : pixelObjIDs[i - 1];
 
             // marks the pixels as placed
             for (int y = 0; y < sizeP; ++y) {
@@ -362,14 +394,14 @@ int CreateArt::bestFit(std::vector<std::vector<bool>>& p, unsigned char*& data, 
 }
 
 // compares 2 pixels
-bool CreateArt::comparePixels(unsigned char*& data, int p1, int p2) {
+bool CreateArt::comparePixels(const unsigned char*& data, int p1, int p2) const {
     return (std::abs(data[p1] - data[p2]) <= tolerance)
         && (std::abs(data[p1 + 1] - data[p2 + 1]) <= tolerance)
         && (std::abs(data[p1 + 2] - data[p2 + 2]) <= tolerance);
 }
 
-
-void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) {
+// formats the hasv values in a way that GD can understand
+void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) const {
 	RGBtoHSV(r, g, b);
     if (b == 0.0f) {
         b += 1.0f;
@@ -383,7 +415,7 @@ void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) {
 }
 
 // faster version that I made for university
-void CreateArt::RGBtoHSV(float& r, float& g, float& b) {
+void CreateArt::RGBtoHSV(float& r, float& g, float& b) const {
     // need them to be between 1 and 0
     r /= 255.0f;
     g /= 255.0f;
@@ -408,11 +440,14 @@ void CreateArt::RGBtoHSV(float& r, float& g, float& b) {
     // this is for the red so that the negative value converts to being between 300 and 360
     if (hue < 0.0f) hue += 360.0f;
     hue = ((static_cast<int>(hue) + 180) % 360) - 180;
+    // for some reason hue 0 is weird
+    if (hue == 0.0f) hue++;
     r = hue;
     g = sat;
     b = vibe;
 }
 
+// updates settings while in editor
 void CreateArt::updateSettings() {
 	limitSize = Mod::get()->getSettingValue<bool>("Disable-limit");
 	sizeLimit = Mod::get()->getSettingValue<int>("Size-limit");

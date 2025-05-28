@@ -1,5 +1,5 @@
-#include "pop/MainMenu.h"
-#include "pop/CreateArt.h"
+#include "importer/MainMenu.h"
+#include "importer/CreateArt.h"
 #include <functional>
 #include <Geode/modify/CCLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
@@ -13,7 +13,7 @@ public:
     // the shit that does stuff
     struct Fields {
         CreateArt artCreator;
-        MainMenu* menu;
+        MainMenu* menu = nullptr;
     };
 
     // triggered when button is clicked
@@ -39,6 +39,7 @@ public:
         EditorUI::createMoveMenu();
         // formats the button
         CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
+        // gives it a fun name
         btn->setID("importArtButton"_spr);
         // add a new button to the editor's UI without a custom image for now
         m_editButtonBar->m_buttonArray->addObject(btn);

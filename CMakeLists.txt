@@ -14,8 +14,8 @@ project(Artimporter VERSION 1.0.0)
 
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
-    src/pop/CreateArt.cpp
-    src/pop/MainMenu.cpp
+    src/importer/CreateArt.cpp
+    src/importer/MainMenu.cpp
 )
 
 if (NOT DEFINED ENV{GEODE_SDK})
