@@ -10,7 +10,7 @@ using namespace geode::prelude;
 class $modify(MyEditorUI, EditorUI) {
 public:
 
-    // woop
+    // the shit that does stuff
     struct Fields {
         CreateArt artCreator;
         MainMenu* menu;
@@ -18,10 +18,11 @@ public:
 
     // triggered when button is clicked
     void onPixelArtImport(CCObject*) {
+        GameObject* ob = CCArrayExt<GameObject*>(this->getSelectedObjects())[0];
         // check if exactly one object is selected
         if (this->getSelectedObjects()->count() == 1) {
             // sets values needed for importing
-			m_fields->artCreator.setSelectedObject(CCArrayExt<GameObject*>(this->getSelectedObjects())[0]);
+			m_fields->artCreator.setSelectedObject(ob);
             // creates a menu and gets a pointer to a method to close it outside of the menu
             m_fields->menu = MainMenu::create(this->getSelectedObjects(), &m_fields->artCreator);
             m_fields->artCreator.setCloseMenu(std::bind(&MainMenu::keyBackClicked, m_fields->menu));
@@ -29,8 +30,7 @@ public:
         }
         else {
             // show an error message if not exactly one object is selected
-            FLAlertLayer::create("Error",
-                "You need to select <cr>one</c> object!", "OK")->show();
+            FLAlertLayer::create("Error", "You need to select <cr>one</c> object!", "OK")->show();
         }
     }
 

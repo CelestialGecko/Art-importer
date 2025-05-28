@@ -79,5 +79,6 @@ void MainMenu::openInfo(CCObject* sender) {
 }
 
 void MainMenu::importArt(CCObject* sender) {
+    artPointer->updateSettings();
     artPointer->importArt();
 }

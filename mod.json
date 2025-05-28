@@ -48,17 +48,20 @@
 			"description": "Related to optimising the art.",
 			"type": "title"
 		},
-		"Enable-Basic-optimise": {
-			"name": "Basic optimise art",
-			"description": "Optimises the art using 4 different objects of different sizes.",
-			"type": "bool",
-			"default": true
+		"Optimise-Type": {
+			"type": "string",
+			"default": "Basic Optimisation",
+			"name": "Optimisation",
+			"one-of": [ "No Optimisation", "Basic Optimisation", "Scale Optimisation" ],
+			"description": "Different methods of optimising the art\nBasic: Optimises the art using 4 different objects of different sizes.\nScale: Uses scaling to optimise the pixel art. This is still in development and will <cr>not</c> work for most images. Only works if <cr>optimise art</c> is unchecked."
 		},
-		"Enable-Scale": {
-			"name": "Optimise with scaling",
-			"description": "Uses scaling to optimise the pixel art.\nThis is still in development and will <cr>not</c> work for most images.\nOnly works if <cr>optimise art</c> is checked.",
-			"type": "bool",
-			"default": false
+		"Tolerance": {
+			"name": "Tolerance",
+			"description": "how similar the colours need to be for a group to be replaced with 1 object.",
+			"type": "int",
+			"default": 3,
+			"min": 1,
+			"max": 255
 		},
 		"Size-limit": {
 			"name": "Size limit",

@@ -50,22 +50,30 @@ private:
     int sizeLimit = Mod::get()->getSettingValue<int>("Size-limit");
     int colourChannel = Mod::get()->getSettingValue<int>("Colour-channel");
 	bool useOldPixel = Mod::get()->getSettingValue<bool>("Use-OlderObjects");
-	bool useScale = Mod::get()->getSettingValue<bool>("Enable-Scale");
-	bool useBasicOptimization = Mod::get()->getSettingValue<bool>("Enable-Basic-optimise");
+	int tolerance = Mod::get()->getSettingValue<int>("Tolerance");
+	std::string basic = Mod::get()->getSettingValue<std::string>("Optimise-Type");
 
     // helper methods - methods of importing the art
     void simpleImport(const std::string& p);
-
+	void basicOptimiseImport(const std::string& p);
+	void scaleOptimiseImport(const std::string& p);
 
     // other helpers
     void formatHSV(float red, float green, float blue, std::string &objColour);
     void RGBtoHSV(float& r, float& g, float& b);
+    int bestFit(std::vector<std::vector<bool>> &p, unsigned char* &data, int x, int y, int ch, int wid, int hi);
+	bool comparePixels(unsigned char*& data, int p1, int p2);
+    int scalePixX(std::vector<std::vector<bool>>& p, unsigned char*& data, int x, int y, int ch, int wid, int hi);
+	int scalePixY(std::vector<std::vector<bool>>& p, unsigned char*& data, int x, int y, int ch, int wid, int hi, int xScale);
+
 public:
     CreateArt() {}
 	~CreateArt();
 
     void importArt();
 	void placeArt(const std::string &p);
+
+    void updateSettings();
 
     // setters
     void setSelectedObject(GameObject* o) { obj = o; }
