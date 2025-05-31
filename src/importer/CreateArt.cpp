@@ -8,7 +8,7 @@ void CreateArt::importArt() {
             // no file selected
             if (result->isOk()) {
                 // gets the path as a string
-                const std::string pathStr = result->unwrap().string();
+                std::string const pathStr = result->unwrap().string();
                 placeArt(pathStr);
             }
         }
@@ -16,7 +16,7 @@ void CreateArt::importArt() {
 }
 
 // places the art, will choose a specific method base on settings
-void CreateArt::placeArt(const std::string &p) {
+void CreateArt::placeArt(std::string const& p) {
     // a simple optimisation that makes use of the different sized pixels
     if (basic == "Basic Optimisation" && !useOldPixel) {
 		basicOptimiseImport(p);
@@ -32,13 +32,13 @@ void CreateArt::placeArt(const std::string &p) {
 }
 
 // just a normal import with none of this woke optimisation stuff
-void CreateArt::simpleImport(const std::string& p) {
+void CreateArt::simpleImport(std::string const& p) {
     int height;
     int channels;
     int width;
     unsigned char* data = nullptr;
-    const float startX = obj->getPositionX();
-    const float startY = obj->getPositionY();
+    float const startX = obj->getPositionX();
+    float const startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
 
@@ -48,7 +48,7 @@ void CreateArt::simpleImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -60,9 +60,9 @@ void CreateArt::simpleImport(const std::string& p) {
         for (int y = height - 1; y >= 0; --y) {
             for (int x = 0; x < width; ++x) {
                 // gets the index for the current pixel being looked at
-                const int pixelIndex = (y * width + x) * channels;
+                int const pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
                 std::string objColour;
@@ -94,7 +94,7 @@ void CreateArt::simpleImport(const std::string& p) {
         // this is too scary for me not to check
         closeMenu();
     }
-    catch (const std::exception& e) {
+    catch (std::exception const& e) {
         if (data) {
             stbi_image_free(data);
 			data = nullptr;
@@ -109,8 +109,8 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
     int channels;
     int width;
     unsigned char* data = nullptr;
-    const float startX = obj->getPositionX();
-    const float startY = obj->getPositionY();
+    float const startX = obj->getPositionX();
+    float const startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
 
@@ -120,7 +120,7 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -135,14 +135,14 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
             for (int x = 0; x < width; ++x) {
 				if (placed[y][x]) continue;
                 // gets the index for the current pixel being looked at
-                const int pixelIndex = (y * width + x) * channels;
+                int const pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
 
                 // decides which pixel fits the best
-				const int pixelType = bestFit(placed, data, x, y, channels, width, height);
+				int const pixelType = bestFit(placed, data, x, y, channels, width, height);
 
                 // gets the colour in GD format
                 std::string objColour;
@@ -187,7 +187,7 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
         // this is too scary for me not to check
         closeMenu();
     }
-    catch (const std::exception& e) {
+    catch (std::exception const& e) {
         if (data) {
             stbi_image_free(data);
             data = nullptr;
@@ -197,13 +197,13 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
 }
 
 // uses scaling to optimise the art
-void CreateArt::scaleOptimiseImport(const std::string& p) {
+void CreateArt::scaleOptimiseImport(std::string const& p) {
     int height;
     int channels;
     int width;
     unsigned char* data = nullptr;
-    const float startX = obj->getPositionX();
-    const float startY = obj->getPositionY();
+    float const startX = obj->getPositionX();
+    float const startY = obj->getPositionY();
     std::ostringstream objInLevel;
     std::string objString;
     try {
@@ -212,7 +212,7 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            const std::string message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
+            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
@@ -226,9 +226,9 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
             for (int x = 0; x < width; ++x) {
                 if (placed[y][x]) continue;
                 // gets the index for the current pixel being looked at
-                const int pixelIndex = (y * width + x) * channels;
+                int const pixelIndex = (y * width + x) * channels;
                 // gets alpha
-                const uint8_t alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
                 // doesnt place anything if empty
                 if (alpha == 0)continue;
 
@@ -240,8 +240,8 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
                 std::string objColour;
                 formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
 
-                const float xSize = scale * scaleX;
-                const float ySize = scale * scaleY;
+                float const xSize = scale * scaleX;
+                float const ySize = scale * scaleY;
 
                 // places the pixel that was chosen
                 if (useOldPixel) {
@@ -274,7 +274,7 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
         // this is too scary for me not to check
         closeMenu();
     }
-    catch (const std::exception& e) {
+    catch (std::exception const& e) {
         if (data) {
             stbi_image_free(data);
             data = nullptr;
@@ -284,8 +284,8 @@ void CreateArt::scaleOptimiseImport(const std::string& p) {
 }
 
 // scales on the x
-int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi) {
-    const int refPix = (py * wid + px) * ch;
+int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, unsigned char const* data, int px, int py, int ch, int wid, int hi) {
+    int const refPix = (py * wid + px) * ch;
 	bool fits = true;
 	int off = 1;
     // will loop until it cant place an extra pixel or reaches the width
@@ -311,8 +311,8 @@ int CreateArt::scalePixX(std::vector<std::vector<bool>>& p, const unsigned char*
 }
 
 // scales on the y
-int CreateArt::scalePixY(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi, int xScale) {
-    const int refPix = (py * wid + px) * ch;
+int CreateArt::scalePixY(std::vector<std::vector<bool>>& p, unsigned char const* data, int px, int py, int ch, int wid, int hi, int xScale) {
+    int const refPix = (py * wid + px) * ch;
 	bool fits = true;
 	int off = 1;
     // will loop until out of range or is unable to place another layer
@@ -343,10 +343,10 @@ int CreateArt::scalePixY(std::vector<std::vector<bool>>& p, const unsigned char*
 
 // finds the best pixel object to reduce object count
 int CreateArt::bestFit(std::vector<std::vector<bool>>& p, const unsigned char* data, int px, int py, int ch, int wid, int hi) {
-    const int referencePixel = (py * wid + px) * ch;
+    int const referencePixel = (py * wid + px) * ch;
     // storing the variations for the pixels in a array
-    const std::vector<int> pixelSizes = { 1, 2, 3, 6 };
-    const std::vector<int> pixelObjIDs = { pixelObjID, medPixelObjID, bigPixelObjID, largePixelObjID };
+    std::vector<int> const pixelSizes = { 1, 2, 3, 6 };
+    std::vector<int> const pixelObjIDs = { pixelObjID, medPixelObjID, bigPixelObjID, largePixelObjID };
 
 	// loops throught the pixel sizes
     for (int i = 0; i < pixelSizes.size(); ++i) {
@@ -371,8 +371,8 @@ int CreateArt::bestFit(std::vector<std::vector<bool>>& p, const unsigned char* d
         // if the larger pixel doesnt fit then it will place the next best one
         if (!fits) {
             // gets the pixel that will be placed, if this is the first loop then we just place the small one
-            const int sizeP = (i == 0) ? 1 : pixelSizes[i - 1];
-            const int returnID = (i == 0) ? pixelObjID : pixelObjIDs[i - 1];
+            int const sizeP = (i == 0) ? 1 : pixelSizes[i - 1];
+            int const returnID = (i == 0) ? pixelObjID : pixelObjIDs[i - 1];
 
             // marks the pixels as placed
             for (int y = 0; y < sizeP; ++y) {

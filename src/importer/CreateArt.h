@@ -61,10 +61,10 @@ private:
     // other helpers
     void formatHSV(float red, float green, float blue, std::string& objColour) const;
     void RGBtoHSV(float& r, float& g, float& b) const;
-    int bestFit(std::vector<std::vector<bool>> &p, const unsigned char* data, int x, int y, int ch, int wid, int hi);
-    bool comparePixels(const unsigned char*& data, int p1, int p2) const;
-    int scalePixX(std::vector<std::vector<bool>>& p, const unsigned char* data, int x, int y, int ch, int wid, int hi);
-	int scalePixY(std::vector<std::vector<bool>>& p, const unsigned char* data, int x, int y, int ch, int wid, int hi, int xScale);
+    int bestFit(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi);
+    bool comparePixels(unsigned char const*& data, int p1, int p2) const;
+    int scalePixX(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi);
+	int scalePixY(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi, int xScale);
 
 public:
     CreateArt() {}
