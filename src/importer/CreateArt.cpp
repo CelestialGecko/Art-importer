@@ -5,11 +5,17 @@ void CreateArt::importArt() {
     // picks a file then will listen for when the event is done
     utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
         [this](Result<std::filesystem::path>* result) {
-            // no file selected
-            if (result->isOk()) {
-                // gets the path as a string
-                std::string const pathStr = result->unwrap().string();
-                placeArt(pathStr);
+
+            try {
+                // no file selected
+                if (result->isOk()) {
+                    // gets the path as a string
+                    std::string const pathStr = result->unwrap().string();
+                    placeArt(pathStr);
+				}
+			}
+			catch (std::exception const& e) {
+				FLAlertLayer::create("File Path Error", e.what(), "OK")->show();
             }
         }
     );
@@ -403,9 +409,6 @@ bool CreateArt::comparePixels(const unsigned char*& data, int p1, int p2) const 
 // formats the hasv values in a way that GD can understand
 void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) const {
 	RGBtoHSV(r, g, b);
-    if (b == 0.0f) {
-        b += 1.0f;
-    }
     g = (g * 100) / 100;
     b = (b * 100) / 100;
 
@@ -420,9 +423,12 @@ void CreateArt::RGBtoHSV(float& r, float& g, float& b) const {
     r /= 255.0f;
     g /= 255.0f;
     b /= 255.0f;
+
     // gets the largest, smallest and the difference
     float max = (std::max)(r, (std::max)(g, b));
+
     float min = (std::min)(r, (std::min)(g, b));
+
     float del = max - min;
     float hue = 0.0f, sat = 0.0f, vibe = max;
     // calculates the rest of the values (sat and hue)
