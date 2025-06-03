@@ -1,4 +1,10 @@
 
+## v2.0.1
+
+* Fixed issues with the colour black being white;
+* Fixed a crash.
+
+
 ## v2.0.0
 
 * All new UI with a button to access the settings and a info button to get help.

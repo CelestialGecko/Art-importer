@@ -63,7 +63,7 @@ MainMenu* MainMenu::create(CCArray* startObj, CreateArt* artImposter) {
 void MainMenu::openInfo(CCObject* sender) {
     geode::createQuickPopup(
         "Info",
-        "Imports images into the editor using pixels.\nI would recommend using a <cg>PNG</c> file.",
+        "Imports images into the editor using pixels.\nI would recommend using a <cg>PNG</c> file.\nIf your art refuses to import then join my discord to get <cg>help</c>.",
         "OK", "Get help",
         [](auto, bool btn2) {
             if (btn2) {
