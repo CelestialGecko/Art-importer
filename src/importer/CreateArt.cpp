@@ -2,7 +2,7 @@
 #include "CreateArt.h"
 
 void CreateArt::importArt() {
-    // picks a file then will listen for when the event is done
+    // picks a file then will listen for when the event is done 
     utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
         [this](Result<std::filesystem::path>* result) {
 
