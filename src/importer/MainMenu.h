@@ -2,6 +2,7 @@
 #include <Geode/Bindings.hpp>
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/utils/web.hpp>
+#include <Geode/Utils.hpp>
 #include "CreateArt.h"
 
 using namespace geode::prelude;

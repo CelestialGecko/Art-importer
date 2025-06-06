@@ -1,4 +1,9 @@
 
+## v2.0.2
+
+* Now available on IOS
+* Fixed file path issues
+
 ## v2.0.1
 
 * Fixed issues with the colour black being white;
@@ -21,7 +26,7 @@
 ## v1.3.1
 
 * Ported to 2.2074
-* Now available on Mac and IOS
+* Now available on Mac
 
 ## v1.3.0
 
