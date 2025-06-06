@@ -5,17 +5,11 @@ void CreateArt::importArt() {
     // picks a file then will listen for when the event is done 
     utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
         [this](Result<std::filesystem::path>* result) {
-
-            try {
-                // no file selected
-                if (result->isOk()) {
-                    // gets the path as a string
-                    std::string const pathStr = result->unwrap().string();
-                    placeArt(pathStr);
-				}
-			}
-			catch (std::exception const& e) {
-				FLAlertLayer::create("File Path Error", e.what(), "OK")->show();
+            // no file selected
+            if (result->isOk()) {
+                // gets the path as a string
+                std::string const pathStr = utils::string::pathToString(result->unwrap());
+                placeArt(pathStr);
             }
         }
     );
