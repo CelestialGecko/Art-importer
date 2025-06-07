@@ -48,19 +48,18 @@ void CreateArt::simpleImport(std::string const& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
+            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
             stbi_image_free(data);
             data = nullptr;
             return;
-            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
-            throw std::runtime_error(message);
         }
 
         // if data doesnt exist or doesnt work
         if (!data) {
+            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
             stbi_image_free(data);
             data = nullptr;
             return;
-            throw std::runtime_error("Failed to load image.");
         }
 
         for (int y = height - 1; y >= 0; --y) {
@@ -93,18 +92,14 @@ void CreateArt::simpleImport(std::string const& p) {
         LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        if (data) {
-            stbi_image_free(data);
-            data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         // this is too scary for me not to check
         closeMenu();
     }
     catch (std::exception const& e) {
-        if (data) {
-            stbi_image_free(data);
-			data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         FLAlertLayer::create("Error", e.what(), "OK")->show();
     }
 }
@@ -126,13 +121,18 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
-            throw std::runtime_error(message);
+            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
+            stbi_image_free(data);
+            data = nullptr;
+            return;
         }
 
         // if data doesnt exist or doesnt work
         if (!data) {
-            throw std::runtime_error("Failed to load image.");
+            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
+            stbi_image_free(data);
+            data = nullptr;
+            return;
         }
         // used to determine if a pixel should be placed
         std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
@@ -186,18 +186,14 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
         LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        if (data) {
-            stbi_image_free(data);
-            data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         // this is too scary for me not to check
         closeMenu();
     }
     catch (std::exception const& e) {
-        if (data) {
-            stbi_image_free(data);
-            data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         FLAlertLayer::create("Error", e.what(), "OK")->show();
     }
 }
@@ -218,13 +214,18 @@ void CreateArt::scaleOptimiseImport(std::string const& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
-            std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
-            throw std::runtime_error(message);
+            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
+            stbi_image_free(data);
+            data = nullptr;
+            return;
         }
 
         // if data doesnt exist or doesnt work
         if (!data) {
-            throw std::runtime_error("Failed to load image.");
+            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
+            stbi_image_free(data);
+            data = nullptr;
+            return;
         }
         // used to determine if a pixel should be placed
         std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
@@ -273,18 +274,14 @@ void CreateArt::scaleOptimiseImport(std::string const& p) {
         LevelEditorLayer* editorLayer = LevelEditorLayer::get();
         editorLayer->createObjectsFromString(objString.c_str(), true, true);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        if (data) {
-            stbi_image_free(data);
-            data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         // this is too scary for me not to check
         closeMenu();
     }
     catch (std::exception const& e) {
-        if (data) {
-            stbi_image_free(data);
-            data = nullptr;
-        }
+        stbi_image_free(data);
+        data = nullptr;
         FLAlertLayer::create("Error", e.what(), "OK")->show();
     }
 }

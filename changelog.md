@@ -1,4 +1,9 @@
 
+## v2.0.3
+
+* No longer crashes on android when size limit is reached.
+* No longer chrashes on android when image is invalid.
+
 ## v2.0.2
 
 * Now available on IOS
