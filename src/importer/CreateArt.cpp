@@ -48,12 +48,18 @@ void CreateArt::simpleImport(std::string const& p) {
 
         // checks the size or if the size limit is on
         if ((width * height > sizeLimit) && !limitSize) {
+            stbi_image_free(data);
+            data = nullptr;
+            return;
             std::string const message = "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.";
             throw std::runtime_error(message);
         }
 
         // if data doesnt exist or doesnt work
         if (!data) {
+            stbi_image_free(data);
+            data = nullptr;
+            return;
             throw std::runtime_error("Failed to load image.");
         }
 
