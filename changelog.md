@@ -1,4 +1,8 @@
 
+## v2.0.4
+
+* Ported to 2.2081
+
 ## v2.0.3
 
 * No longer crashes on android when size limit is reached.
