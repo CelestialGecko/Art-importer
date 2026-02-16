@@ -2,16 +2,18 @@
 #include "CreateArt.h"
 
 void CreateArt::importArt() {
-    // picks a file then will listen for when the event is done 
-    utils::file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2).listen(
-        [this](Result<std::filesystem::path>* result) {
-            // no file selected
-            if (result->isOk()) {
-                // gets the path as a string
-                std::string const pathStr = utils::string::pathToString(result->unwrap());
-                placeArt(pathStr);
+    async::spawn(file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2),
+        [this](Result<std::optional<std::filesystem::path>> result) {
+            if (result.isOk()) {
+                auto opt = result.unwrap();
+                if (opt) {
+                    std::string const pathStr = utils::string::pathToString(opt.value());
+                    this->placeArt(pathStr);
+                }
+                else {
+                }
             }
-        }
+		}
     );
 }
 

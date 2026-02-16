@@ -25,8 +25,9 @@ public:
 			m_fields->artCreator.setSelectedObject(ob);
             // creates a menu and gets a pointer to a method to close it outside of the menu
             m_fields->menu = MainMenu::create(this->getSelectedObjects(), &m_fields->artCreator);
-            m_fields->artCreator.setCloseMenu(std::bind(&MainMenu::keyBackClicked, m_fields->menu));
+            m_fields->artCreator.setCloseMenu(std::bind(&MainMenu::removeFromParent, m_fields->menu));
             CCScene::get()->addChild(m_fields->menu);
+
         }
         else {
             // show an error message if not exactly one object is selected

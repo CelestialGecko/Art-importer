@@ -2,6 +2,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/Bindings.hpp>
 #include <Geode/utils/file.hpp>
+#include <Geode/utils/async.hpp>
 
 #include "stb_image.h"
 
