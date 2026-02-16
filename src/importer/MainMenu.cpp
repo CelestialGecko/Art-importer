@@ -1,7 +1,7 @@
 #include "MainMenu.h"
 
-// sets up all the elements in the UI
-bool MainMenu::setup(cocos2d::CCArray* startObj, CreateArt* artImposter) {
+bool MainMenu::init(CCArray* startObj, CreateArt* artImposter) {
+    if (!Popup::init(240.0f, 130.0f)) return false;
 
     artPointer = artImposter;
 
@@ -48,14 +48,13 @@ bool MainMenu::setup(cocos2d::CCArray* startObj, CreateArt* artImposter) {
 // create the menu
 MainMenu* MainMenu::create(CCArray* startObj, CreateArt* artImposter) {
     MainMenu* ret = new MainMenu();
-    if (ret && ret->initAnchored(240.0f, 130.0f, startObj, artImposter)) {
-        ret->autorelease();
+    // new sigma shit
+    if (ret->init(startObj, artImposter)) {
+		ret->autorelease();
+		return ret;
     }
-    else {
-        delete ret;
-        ret = nullptr;
-    }
-    return ret;
+    delete ret;
+	return nullptr;
 }
 
 // info menu that also contain another discord plug
@@ -67,7 +66,7 @@ void MainMenu::openInfo(CCObject* sender) {
         "OK", "Get help",
         [](auto, bool btn2) {
             if (btn2) {
-                web::openLinkInBrowser("https://discord.gg/nS5HFrbJ6y");
+                web::openLinkInBrowser("https://celestialgecko.github.io/discord/");
             }
         }
     );

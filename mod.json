@@ -1,23 +1,23 @@
 {
-	"geode": "4.5.0",
-	"gd": {	
-        "win": "2.2074",
-        "mac": "2.2074",
-        "android": "2.2074",
-        "ios": "2.2074"
+	"geode": "5.0.0-beta.2",
+	"gd": {
+		"win": "2.2081",
+		"mac": "2.2081",
+		"android": "2.2081",
+		"ios": "2.2081"
 	},
-	"version": "v2.0.2",
+	"version": "v2.0.4",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
 	"description": "This will import pixel art",
 	"links": {
-		"community": "https://discord.gg/nS5HFrbJ6y",
+		"community": "https://celestialgecko.github.io/discord/",
 		"source": "https://github.com/CelestialGecko/Art-importer",
 		"homepage": "https://www.youtube.com/@Geck"
 	},
 	"resources": {
-		"spritesheets":{
+		"spritesheets": {
 			"ImageButton": [
 				"res/pixelArtToolBtn.png"
 			]
@@ -79,8 +79,8 @@
 		}
 	},
 	"tags": [
-      "editor",
-      "offline",
-			"utility"
-    ]
+		"editor",
+		"offline",
+		"utility"
+	]
 }

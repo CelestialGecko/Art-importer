@@ -7,12 +7,13 @@
 
 using namespace geode::prelude;
 
-class MainMenu : public geode::Popup<CCArray*, CreateArt*> {
+class MainMenu : public geode::Popup {
 private:
     CreateArt* artPointer = nullptr;
 	bool imported = false;
 protected:
-    bool setup(CCArray* startObj, CreateArt* artImposter) override;
+	bool init(CCArray* startObj, CreateArt* artImposter);
+
     // runs the importer
     void importArt(CCObject* sender);
     // opens info
