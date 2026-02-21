@@ -33,6 +33,29 @@ void CreateArt::placeArt(std::string const& p) {
     }
 }
 
+void CreateArt::createObjects(std::string const& objString) {
+    auto editorUI = EditorUI::get();
+    auto objects = editorUI->pasteObjects(objString.c_str(), false, false);
+    
+    /*
+    1. First undo deselects the imported image and replaces and reselects the placeholder object
+    2. Second undo deletes the imported image
+        This is so if someone wants to use the same object to import multiple images in the same or similar
+        places, they can do that by pressing undo.
+    */
+    editorUI->deselectAll();
+	editorUI->selectObject(obj, false);
+	editorUI->createUndoSelectObject(true);
+	editorUI->deselectAll();
+	editorUI->selectObjects(objects, false);
+
+    auto baseLayer = GJBaseGameLayer::get();
+    baseLayer->groupStickyObjects(objects); // links the art together
+
+    auto editorLayer = LevelEditorLayer::get();
+    editorLayer->removeObject(obj, false); // Removes the placeholder object
+}
+
 // just a normal import with none of this woke optimisation stuff
 void CreateArt::simpleImport(std::string const& p) {
     int height;
@@ -91,8 +114,7 @@ void CreateArt::simpleImport(std::string const& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
+        createObjects(objString);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         stbi_image_free(data);
         data = nullptr;
@@ -185,8 +207,7 @@ void CreateArt::basicOptimiseImport(const std::string& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
+        createObjects(objString);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         stbi_image_free(data);
         data = nullptr;
@@ -273,8 +294,7 @@ void CreateArt::scaleOptimiseImport(std::string const& p) {
         objString = objInLevel.str();
         objString.pop_back();
         // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
+        createObjects(objString);
         FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
         stbi_image_free(data);
         data = nullptr;

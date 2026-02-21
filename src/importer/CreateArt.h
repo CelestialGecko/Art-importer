@@ -54,6 +54,9 @@ private:
     // places the art with the path
     void placeArt(const std::string& p);
 
+    // places the art with the object string
+    void createObjects(const std::string& p);
+
     // helper methods - methods of importing the art
     void simpleImport(const std::string& p);
 	void basicOptimiseImport(const std::string& p);
