@@ -1,3 +1,11 @@
+## v2.1.0
+
+* New optimisation option that adds a background to images that are not transparent.
+* Clearer error messages when importing art.
+* Scale based optimisation no longer breaks with transparent images.
+* Basic optimisation no longer breaks with transparent images.
+* Code is cleaner.
+* Other small fixes.
 
 ## v2.0.4
 
