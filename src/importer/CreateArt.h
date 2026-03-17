@@ -37,6 +37,22 @@ private:
     // scale used for moving between pixels
     static constexpr float scale = 5;
 
+    // number of channels - usually 3 for jpg and 4 for png
+    int channels = 4;
+    // sixes
+    int height = 0;
+    int width = 0;
+
+	uint8_t Mr = 0;
+	uint8_t Mg = 0;
+	uint8_t Mb = 0;
+
+    // image data
+    unsigned char* data = nullptr;
+
+    // object string
+    std::ostringstream objInLevel;
+
     // selected object
     GameObject* obj = nullptr;
 
@@ -50,6 +66,7 @@ private:
 	bool useOldPixel = Mod::get()->getSettingValue<bool>("Use-OlderObjects");
 	int tolerance = Mod::get()->getSettingValue<int>("Tolerance");
 	std::string basic = Mod::get()->getSettingValue<std::string>("Optimise-Type");
+	bool backgroundOp = Mod::get()->getSettingValue<bool>("Background-Optimisation");
 
     // places the art with the path
     void placeArt(const std::string& p);
@@ -58,12 +75,14 @@ private:
     void simpleImport(const std::string& p);
 	void basicOptimiseImport(const std::string& p);
 	void scaleOptimiseImport(const std::string& p);
+    void optimiseJPG();
 
     // other helpers
     void formatHSV(float red, float green, float blue, std::string& objColour) const;
     void RGBtoHSV(float& r, float& g, float& b) const;
     int bestFit(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi);
     bool comparePixels(unsigned char const*& data, int p1, int p2) const;
+    bool comparePixels(uint8_t r1, uint8_t g1, uint8_t b1, uint8_t r2, uint8_t g2, uint8_t b2) const;
     int scalePixX(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi);
 	int scalePixY(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi, int xScale);
 

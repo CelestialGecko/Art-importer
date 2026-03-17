@@ -1,12 +1,12 @@
 {
-	"geode": "5.0.0-beta.2",
+	"geode": "5.3.0",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
 		"android": "2.2081",
 		"ios": "2.2081"
 	},
-	"version": "v2.0.4",
+	"version": "v2.1.0",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
@@ -55,29 +55,35 @@
 			"one-of": [ "No Optimisation", "Basic Optimisation", "Scale Optimisation" ],
 			"description": "Different methods of optimising the art\nBasic: Optimises the art using 4 different objects of different sizes.\nScale: Uses scaling to optimise the pixel art. This is still in development and will <cr>not</c> work for most images. Only works if <cr>optimise art</c> is unchecked."
 		},
-		"Tolerance": {
-			"name": "Tolerance",
-			"description": "how similar the colours need to be for a group to be replaced with 1 object.",
-			"type": "int",
-			"default": 3,
-			"min": 1,
-			"max": 255
-		},
-		"Size-limit": {
-			"name": "Size limit",
-			"description": "Number of pixels able to be imported.",
-			"type": "int",
-			"default": 40000,
-			"min": 100,
-			"max": 80000
-		},
-		"Disable-limit": {
-			"name": "Remove size limit",
-			"description": "Will remove the default size limit for images that can be imported.\nCan cause <cr>crashes</c> if the image is too big so is not recommended.",
+		"Background-Optimisation": {
 			"type": "bool",
-			"default": false
-		}
-	},
+			"default": false,
+			"name": "Optimise background",
+      "description": "Whether to optimise the background of the image using the most common colour as the background. Recommended when using jpg however keep it off if your using transparent images."
+		},
+			"Tolerance": {
+				"name": "Tolerance",
+				"description": "how similar the colours need to be for a group to be replaced with 1 object.",
+				"type": "int",
+				"default": 3,
+				"min": 1,
+				"max": 255
+			},
+			"Size-limit": {
+				"name": "Size limit",
+				"description": "Number of pixels able to be imported.",
+				"type": "int",
+				"default": 40000,
+				"min": 100,
+				"max": 80000
+			},
+			"Disable-limit": {
+				"name": "Remove size limit",
+				"description": "Will remove the default size limit for images that can be imported.\nCan cause <cr>crashes</c> if the image is too big so is not recommended.",
+				"type": "bool",
+				"default": false
+			}
+		},
 	"tags": [
 		"editor",
 		"offline",

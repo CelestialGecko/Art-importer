@@ -19,12 +19,45 @@ void CreateArt::importArt() {
 
 // places the art, will choose a specific method base on settings
 void CreateArt::placeArt(std::string const& p) {
+
+	objInLevel.str("");
+	objInLevel.clear();
+
+    // gets image data
+    data = stbi_load(p.c_str(), &width, &height, &channels, 0);
+
+    // if data doesnt exist or doesnt work
+    if (!data) {
+        geode::createQuickPopup(
+            "Error",
+            "Failed to load image!\nIf your art refuses to import then join my discord to get help and make sure to send this error message.\nFile path: " + p,
+            "OK", "Get help",
+            [](auto, bool btn2) {
+                if (btn2) {
+                    web::openLinkInBrowser("https://celestialgecko.github.io/discord/");
+                }
+            }
+        );
+        stbi_image_free(data);
+        data = nullptr;
+        return;
+    }
+
+    // checks the size or if the size limit is on
+    if ((width * height > sizeLimit) && !limitSize) {
+        FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
+        stbi_image_free(data);
+        data = nullptr;
+        return;
+    }
+
     // a simple optimisation that makes use of the different sized pixels
     if (basic == "Basic Optimisation" && !useOldPixel) {
 		basicOptimiseImport(p);
     }
     // scales the objects on the x and y to fit the area
     else if (basic == "Scale Optimisation") {
+        if (backgroundOp) optimiseJPG();
 		scaleOptimiseImport(p);
     }
     // just places the pixels without any fancy optimisation
@@ -35,257 +68,219 @@ void CreateArt::placeArt(std::string const& p) {
 
 // just a normal import with none of this woke optimisation stuff
 void CreateArt::simpleImport(std::string const& p) {
-    int height;
-    int channels;
-    int width;
-    unsigned char* data = nullptr;
     float const startX = obj->getPositionX();
     float const startY = obj->getPositionY();
-    std::ostringstream objInLevel;
     std::string objString;
 
-    try {
-        // gets image data
-        data = stbi_load(p.c_str(), &width, &height, &channels, 0);
-
-        // checks the size or if the size limit is on
-        if ((width * height > sizeLimit) && !limitSize) {
-            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
-
-        // if data doesnt exist or doesnt work
-        if (!data) {
-            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
-
-        for (int y = height - 1; y >= 0; --y) {
-            for (int x = 0; x < width; ++x) {
-                // gets the index for the current pixel being looked at
-                int const pixelIndex = (y * width + x) * channels;
-                // gets alpha
-                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
-                // doesnt place anything if empty
-                if (alpha == 0)continue;
-                std::string objColour;
-                formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
-                // adds object to the string
-                if (useOldPixel) {
-                    objInLevel << "1," << oldPixelObjID << ",2," << startX + x * (scale + 2.5f) << ",3," <<
-                        startY - y * (scale + 2.5f) << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize / 5 << ";";
-                }
-                else {
-                    objInLevel << "1," << pixelObjID << ",2," << startX + x * scale << ",3," <<
-                        startY - y * scale << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize << ";";
-                }
+    for (int y = height - 1; y >= 0; --y) {
+        for (int x = 0; x < width; ++x) {
+            // gets the index for the current pixel being looked at
+            int const pixelIndex = (y * width + x) * channels;
+            // gets alpha
+            uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+            // doesnt place anything if empty
+            if (alpha == 0)continue;
+            std::string objColour;
+            formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
+            // adds object to the string
+            if (useOldPixel) {
+                objInLevel << "1," << oldPixelObjID << ",2," << startX + x * (scale + 2.5f) << ",3," <<
+                    startY - y * (scale + 2.5f) << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize / 5 << ";";
+            }
+            else {
+                objInLevel << "1," << pixelObjID << ",2," << startX + x * scale << ",3," <<
+                    startY - y * scale << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize << ";";
             }
         }
-        // removes the last ;
-        objString = objInLevel.str();
-        objString.pop_back();
-        // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
-        FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        stbi_image_free(data);
-        data = nullptr;
-        // this is too scary for me not to check
-        closeMenu();
     }
-    catch (std::exception const& e) {
-        stbi_image_free(data);
-        data = nullptr;
-        FLAlertLayer::create("Error", e.what(), "OK")->show();
-    }
+    // removes the last ;
+    objString = objInLevel.str();
+    objString.pop_back();
+    // adds the new objects to the level and then prompts the user
+    LevelEditorLayer* editorLayer = LevelEditorLayer::get();
+    editorLayer->createObjectsFromString(objString.c_str(), true, true);
+    FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
+    stbi_image_free(data);
+    data = nullptr;
+    // this is too scary for me not to check
+    closeMenu();
 }
 
 // basic optimisation using 4 different pixel objects from the pixel art tab
 void CreateArt::basicOptimiseImport(const std::string& p) {
-    int height;
-    int channels;
-    int width;
-    unsigned char* data = nullptr;
     float const startX = obj->getPositionX();
     float const startY = obj->getPositionY();
-    std::ostringstream objInLevel;
     std::string objString;
 
-    try {
-        // gets image data
-        data = stbi_load(p.c_str(), &width, &height, &channels, 0);
+    // used to determine if a pixel should be placed
+    std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
 
-        // checks the size or if the size limit is on
-        if ((width * height > sizeLimit) && !limitSize) {
-            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
+    for (int y = height - 1; y >= 0; --y) {
+        for (int x = 0; x < width; ++x) {
+            if (placed[y][x]) continue;
+            // gets the index for the current pixel being looked at
+            int const pixelIndex = (y * width + x) * channels;
+            // gets alpha
+            uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+            // doesnt place anything if empty
+            if (alpha == 0)continue;
 
-        // if data doesnt exist or doesnt work
-        if (!data) {
-            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
-        // used to determine if a pixel should be placed
-        std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
+            // decides which pixel fits the best
+            int const pixelType = bestFit(placed, data, x, y, channels, width, height);
 
-        for (int y = height - 1; y >= 0; --y) {
-            for (int x = 0; x < width; ++x) {
-				if (placed[y][x]) continue;
-                // gets the index for the current pixel being looked at
-                int const pixelIndex = (y * width + x) * channels;
-                // gets alpha
-                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
-                // doesnt place anything if empty
-                if (alpha == 0)continue;
+            // gets the colour in GD format
+            std::string objColour;
+            formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
 
-                // decides which pixel fits the best
-				int const pixelType = bestFit(placed, data, x, y, channels, width, height);
-
-                // gets the colour in GD format
-                std::string objColour;
-                formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
-
-                // places the object depending on which one works the best
-                switch (pixelType) {
-                case 3097:
-                    objInLevel << "1," << pixelType << ",2," << startX + x * scale << ",3," <<
-                        startY - y * scale << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize << ";";;
-                    break;
-                case 3094:
-                    objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 2.5f << ",3," <<
-                        (startY - y * scale) + 2.5f << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize * 2.0f << ";";;
-					break;
-				case 3093:
-                    objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 5.0f << ",3," <<
-                        (startY - y * scale) + 5.0f << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize * 3.0f << ";";;
-                    break;
-				case 3092:
-                    objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 12.5f << ",3," <<
-                        (startY - y * scale) + 12.5f << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",32," << objSize * 6.0f << ";";;
-					break;
-                }
+            // places the object depending on which one works the best
+            switch (pixelType) {
+            case 3097:
+                objInLevel << "1," << pixelType << ",2," << startX + x * scale << ",3," <<
+                    startY - y * scale << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize << ";";;
+                break;
+            case 3094:
+                objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 2.5f << ",3," <<
+                    (startY - y * scale) + 2.5f << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize * 2.0f << ";";;
+                break;
+            case 3093:
+                objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 5.0f << ",3," <<
+                    (startY - y * scale) + 5.0f << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize * 3.0f << ";";;
+                break;
+            case 3092:
+                objInLevel << "1," << pixelType << ",2," << (startX + x * scale) + 12.5f << ",3," <<
+                    (startY - y * scale) + 12.5f << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",32," << objSize * 6.0f << ";";;
+                break;
             }
         }
-        // removes the last ;
-        objString = objInLevel.str();
-        objString.pop_back();
-        // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
-        FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        stbi_image_free(data);
-        data = nullptr;
-        // this is too scary for me not to check
-        closeMenu();
     }
-    catch (std::exception const& e) {
-        stbi_image_free(data);
-        data = nullptr;
-        FLAlertLayer::create("Error", e.what(), "OK")->show();
+    // removes the last ;
+    objString = objInLevel.str();
+    objString.pop_back();
+    // adds the new objects to the level and then prompts the user
+    LevelEditorLayer* editorLayer = LevelEditorLayer::get();
+    editorLayer->createObjectsFromString(objString.c_str(), true, true);
+    FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
+    stbi_image_free(data);
+    data = nullptr;
+    // this is too scary for me not to check
+    closeMenu();
+}
+
+// simple method to find the most common colour and then place it in the background
+void CreateArt::optimiseJPG() {
+	// calculates the frequency of each colour in the image
+    std::unordered_map<uint32_t, size_t> freq;
+    for (int i = 0; i < width * height; i++) {
+        freq[(data[i * channels] << 16) | (data[i * channels + 1] << 8) | data[i * channels + 2]]++;
+    }
+
+    size_t bestCount = 0;
+    uint32_t bestCol = 0;
+
+	// finds the most common colour
+    for (auto& [col, count] : freq) {
+        if (count > bestCount) {
+            bestCol = col;
+            bestCount = count;
+        }
+    }
+	// re shifts the colour back into rgb format
+    Mr = (bestCol >> 16) & 0xFF;
+    Mg = (bestCol >> 8) & 0xFF;
+    Mb = bestCol & 0xFF;
+
+    std::string objColour;
+
+	// gets the colour in GD format
+    formatHSV(Mr, Mg, Mb, objColour);
+
+    // places the pixel that was chosen
+    if (useOldPixel) {
+        objInLevel << "1," << oldLargePixelObjID << ",2," << obj->getPositionX() + width * scale / 2 << ",3," <<
+            obj->getPositionY() - height * scale / 2 + scale << ",21," << colourChannel << ",41,1,43," <<
+            objColour << ",25," << zOrder - 2 << ",128," << (objSize / 30) * width
+            << ",129," << (objSize / 30) * height << ";";
+
+    }
+    else {
+
+        objInLevel << "1," << largePixelObjID << ",2," << obj->getPositionX() + width * scale / 2 << ",3," <<
+            obj->getPositionY() - height * scale /  2 + scale << ",21," << colourChannel << ",41,1,43," <<
+            objColour << ",25," << zOrder - 2 << ",128," << width * scale
+            << ",129," << height * scale << ";";
     }
 }
 
 // uses scaling to optimise the art
 void CreateArt::scaleOptimiseImport(std::string const& p) {
-    int height;
-    int channels;
-    int width;
-    unsigned char* data = nullptr;
     float const startX = obj->getPositionX();
     float const startY = obj->getPositionY();
-    std::ostringstream objInLevel;
     std::string objString;
-    try {
-        // gets image data
-        data = stbi_load(p.c_str(), &width, &height, &channels, 0);
 
-        // checks the size or if the size limit is on
-        if ((width * height > sizeLimit) && !limitSize) {
-            FLAlertLayer::create("Error", "Image cannot be bigger than " + std::to_string(sizeLimit) + ".\nChange this in the settings menu.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
+    // used to determine if a pixel should be placed
+    std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
+    for (int y = height - 1; y >= 0; --y) {
+        for (int x = 0; x < width; ++x) {
+            if (placed[y][x]) continue;
+            // gets the index for the current pixel being looked at
+            int const pixelIndex = (y * width + x) * channels;
+            // gets alpha
+            uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
+            // doesnt place anything if empty
+            if (alpha == 0)continue;
 
-        // if data doesnt exist or doesnt work
-        if (!data) {
-            FLAlertLayer::create("Error", "Failed to load image.", "OK")->show();
-            stbi_image_free(data);
-            data = nullptr;
-            return;
-        }
-        // used to determine if a pixel should be placed
-        std::vector<std::vector<bool>> placed(height, std::vector<bool>(width, false));
-        for (int y = height - 1; y >= 0; --y) {
-            for (int x = 0; x < width; ++x) {
-                if (placed[y][x]) continue;
-                // gets the index for the current pixel being looked at
-                int const pixelIndex = (y * width + x) * channels;
-                // gets alpha
-                uint8_t const alpha = (channels == 4) ? data[pixelIndex + 3] : 255;
-                // doesnt place anything if empty
-                if (alpha == 0)continue;
-
-                // gets the 2 offsets used to determine the size and pixel pos
-				int scaleX = scalePixX(placed, data, x, y, channels, width, height);
-				int scaleY = scalePixY(placed, data, x, y, channels, width, height, scaleX);
-
-                // gets the colour in GD format
-                std::string objColour;
-                formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
-
-                float const xSize = scale * scaleX;
-                float const ySize = scale * scaleY;
-
-                // places the pixel that was chosen
-                if (useOldPixel) {
-                    objInLevel << "1," << oldLargePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
-                        startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",128," << (objSize / 30) * scaleX
-                        << ",129," << (objSize / 30) * scaleY << ";";
-                }
-                else {
-
-                    objInLevel << "1," << largePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
-                        startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
-                        objColour << ",25," << zOrder << ",128," << xSize
-                        << ",129," << ySize << ";";
+            if (backgroundOp) {
+                if (comparePixels(Mr, Mg, Mb, data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2])) {
+                    placed[y][x] = true;
+                    continue;
                 }
             }
-        }
 
-        // removes the last ;
-        objString = objInLevel.str();
-        objString.pop_back();
-        // adds the new objects to the level and then prompts the user
-        LevelEditorLayer* editorLayer = LevelEditorLayer::get();
-        editorLayer->createObjectsFromString(objString.c_str(), true, true);
-        FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
-        stbi_image_free(data);
-        data = nullptr;
-        // this is too scary for me not to check
-        closeMenu();
+            // gets the 2 offsets used to determine the size and pixel pos
+            int scaleX = scalePixX(placed, data, x, y, channels, width, height);
+            int scaleY = scalePixY(placed, data, x, y, channels, width, height, scaleX);
+
+            // gets the colour in GD format
+            std::string objColour;
+            formatHSV(data[pixelIndex], data[pixelIndex + 1], data[pixelIndex + 2], objColour);
+
+            float const xSize = scale * scaleX;
+            float const ySize = scale * scaleY;
+
+            // places the pixel that was chosen
+            if (useOldPixel) {
+                objInLevel << "1," << oldLargePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
+                    startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",128," << (objSize / 30) * scaleX
+                    << ",129," << (objSize / 30) * scaleY << ";";
+            }
+            else {
+
+                objInLevel << "1," << largePixelObjID << ",2," << startX + x * scale + xSize / 2 << ",3," <<
+                    startY - y * scale + ySize / 2 << ",21," << colourChannel << ",41,1,43," <<
+                    objColour << ",25," << zOrder << ",128," << xSize
+                    << ",129," << ySize << ";";
+            }
+        }
     }
-    catch (std::exception const& e) {
-        stbi_image_free(data);
-        data = nullptr;
-        FLAlertLayer::create("Error", e.what(), "OK")->show();
-    }
+
+    // removes the last ;
+    objString = objInLevel.str();
+    objString.pop_back();
+    // adds the new objects to the level and then prompts the user
+    LevelEditorLayer* editorLayer = LevelEditorLayer::get();
+    editorLayer->createObjectsFromString(objString.c_str(), true, true);
+    FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
+    stbi_image_free(data);
+    data = nullptr;
+    // this is too scary for me not to check
+    closeMenu();
 }
 
 // scales on the x
@@ -399,10 +394,21 @@ int CreateArt::bestFit(std::vector<std::vector<bool>>& p, const unsigned char* d
 }
 
 // compares 2 pixels
+// true if they are the same
 bool CreateArt::comparePixels(const unsigned char*& data, int p1, int p2) const {
+    // now takes into account alpha.
+    uint8_t const a1 = (channels == 4) ? data[p1 + 3] : 255;
+    uint8_t const a2 = (channels == 4) ? data[p2 + 3] : 255;
     return (std::abs(data[p1] - data[p2]) <= tolerance)
         && (std::abs(data[p1 + 1] - data[p2 + 1]) <= tolerance)
-        && (std::abs(data[p1 + 2] - data[p2 + 2]) <= tolerance);
+        && (std::abs(data[p1 + 2] - data[p2 + 2]) <= tolerance)
+        && (std::abs(a1 - a2) <= tolerance);
+}
+// same as other one but take in the individual channels - assumes alpha is not being used currently
+bool CreateArt::comparePixels(uint8_t r1, uint8_t g1, uint8_t b1, uint8_t r2, uint8_t g2, uint8_t b2) const {
+    return (std::abs(r1 - r2) <= tolerance)
+        && (std::abs(g1 - g2) <= tolerance)
+        && (std::abs(b1 - b2) <= tolerance);
 }
 
 // formats the hasv values in a way that GD can understand
