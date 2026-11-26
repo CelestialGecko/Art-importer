@@ -37,17 +37,35 @@ public:
 
     // creates the button that is used to open the pixel art importer
     void createMoveMenu() {
+        
+        
         EditorUI::createMoveMenu();
+
         // formats the button
         CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
         // gives it a fun name
         btn->setID("importArtButton"_spr);
         // add a new button to the editor's UI without a custom image for now
-        m_editButtonBar->m_buttonArray->addObject(btn);
-        // fetch rows and columns settings from the game manager
-        int rows = GameManager::sharedState()->getIntGameVariable("0049");
-        int cols = GameManager::sharedState()->getIntGameVariable("0050");
-        // reload it
-        m_editButtonBar->reloadItems(rows, cols);
+
+        if (!m_editButtonBar) {
+
+            CCNode* menu = nullptr;
+			menu = m_dpadMoveNode->getChildByIndex(4);
+			auto warp = menu->getChildByTag(47);
+			auto snap = menu->getChildByTag(44);
+            btn->setPosition({ snap->getPositionX(), warp->getPositionY() });
+            menu->addChild(btn);
+            menu->updateLayout();
+
+        }
+        else {
+            // add a new button to the editor's UI without a custom image for now
+            m_editButtonBar->m_buttonArray->addObject(btn);
+            // fetch rows and columns settings from the game manager
+            int rows = GameManager::sharedState()->getIntGameVariable("0049");
+            int cols = GameManager::sharedState()->getIntGameVariable("0050");
+            // reload it
+            m_editButtonBar->reloadItems(rows, cols);
+        }
     }
 };

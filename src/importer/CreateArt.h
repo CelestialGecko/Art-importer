@@ -18,6 +18,20 @@ static auto ALLOWED_TYPES2 = file::FilePickOptions{
     }
 };
 
+struct Cord {
+    int x;
+    int y;
+};
+
+struct Entry {
+    // colours
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    // coordinates of each pixel with this colour
+    std::vector<Cord> coords;
+};
+
 class CreateArt final{
 private:
     // bunch if stuff I need to know
@@ -59,6 +73,17 @@ private:
     // closing the menu after complete
     std::function<void()> closeMenu = nullptr;
 
+    // new text line char
+    char LF = '\n';
+
+	// for base64 encoding
+    const std::string base64Char =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789+/";
+
+    std::vector<Entry> ImageColours;
+
     // settings
     bool limitSize = Mod::get()->getSettingValue<bool>("Disable-limit");
     int sizeLimit = Mod::get()->getSettingValue<int>("Size-limit");
@@ -76,6 +101,7 @@ private:
 	void basicOptimiseImport(const std::string& p);
 	void scaleOptimiseImport(const std::string& p);
     void optimiseJPG();
+    void placeTextObj(const std::string& p);
 
     // other helpers
     void formatHSV(float red, float green, float blue, std::string& objColour) const;
@@ -85,7 +111,14 @@ private:
     bool comparePixels(uint8_t r1, uint8_t g1, uint8_t b1, uint8_t r2, uint8_t g2, uint8_t b2) const;
     int scalePixX(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi);
 	int scalePixY(std::vector<std::vector<bool>>& p, unsigned char const* data, int x, int y, int ch, int wid, int hi, int xScale);
-
+    // GD text helpers
+	std::string base64Encode(const std::string& in) const;
+    std::vector<Entry>::iterator findColour(uint8_t r, uint8_t g, uint8_t b);
+    void newColour(uint8_t r, uint8_t g, uint8_t b, int x, int y);
+	void addToExistingColour(std::vector<Entry>::iterator it, int x, int y);
+    std::string makeColourString(std::vector<Entry>::iterator it);
+	void makeTextString();
+    bool isColourPresent(std::vector<Entry>::iterator it, int x, int y);
 public:
     CreateArt() {}
     ~CreateArt() {}

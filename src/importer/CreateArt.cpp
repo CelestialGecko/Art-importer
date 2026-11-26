@@ -2,19 +2,167 @@
 #include "CreateArt.h"
 
 void CreateArt::importArt() {
+    
+
     async::spawn(file::pick(file::PickMode::OpenFile, ALLOWED_TYPES2),
-        [this](Result<std::optional<std::filesystem::path>> result) {
-            if (result.isOk()) {
-                auto opt = result.unwrap();
+        [this](Result<std::optional<asp::fs::Path>> res) {
+            if (!res.isErr()) {
+                auto opt = res.unwrap();
                 if (opt) {
-                    std::string const pathStr = utils::string::pathToString(opt.value());
-                    this->placeArt(pathStr);
+                    this->placeArt(opt.value().string());
                 }
                 else {
+                    geode::createQuickPopup(
+                        "Error",
+                        "No value present!\nIf your art refuses to import then join my discord to get help and make sure to send this error message.",
+                        "OK", "Get help",
+                        [](auto, bool btn2) {
+                            if (btn2) {
+                                web::openLinkInBrowser("https://celestialgecko.github.io/discord/");
+                            }
+                        }
+                    );
                 }
             }
-		}
+        }
     );
+}
+
+// figures out if a colour exists and returns an iterator to it.
+std::vector<Entry>::iterator CreateArt::findColour(uint8_t r, uint8_t g, uint8_t b) {
+    return std::find_if(ImageColours.begin(), ImageColours.end(),
+        [r, g, b, this](const Entry& e)
+        {
+            return this->comparePixels(e.r, e.g, e.b, r, g, b);
+        });
+}
+
+// adds a new colour to the vector.
+void CreateArt::newColour(uint8_t r, uint8_t g, uint8_t b, int x, int y) {
+    Entry nE;
+	nE.r = r;
+	nE.g = g;
+	nE.b = b;
+	nE.coords.push_back({ x, y });
+    ImageColours.push_back(nE);
+}
+
+// adds a new coordinate to an existing colour.
+void CreateArt::addToExistingColour(std::vector<Entry>::iterator it, int x, int y) {
+	it->coords.push_back({ x, y });
+}
+
+// checks if the colour exists in the vector.
+bool CreateArt::isColourPresent(std::vector<Entry>::iterator it, int x, int y) {
+    return std::any_of(it->coords.begin(), it->coords.end(),
+        [x, y](const Cord& coord) {
+            return (coord.x == x) && (coord.y == y);
+		});
+}
+
+// creates a string of text that will be placed in the level.
+// 1 object is made per colour.
+std::string CreateArt::makeColourString(std::vector<Entry>::iterator it) {
+    std::string out;
+    for (int y = height - 1; y >= 0; --y) {
+        for (int x = 0; x < width; ++x) {
+            if (isColourPresent(it, x, y)) out += "X";
+			else out += "  ";
+        }
+		out += '\n';
+    }
+	return out;
+}
+
+// places each object, 1 object per colour.
+void CreateArt::makeTextString() {
+    for(auto it = ImageColours.begin(); it != ImageColours.end(); ++it) {
+        std::string objColour;
+        formatHSV(it->r, it->g, it->b, objColour);
+        std::string text = makeColourString(it);
+        objInLevel << "1,914,2," << obj->getPositionX() << ",3," <<
+            obj->getPositionY() << ",31,"<< base64Encode(text) << ",488,-28," <<
+            "41,1,43," << objColour << ",25," << zOrder - 1 << ";";
+	}
+}
+
+void CreateArt::placeTextObj(const std::string& p) {
+	std::string objString;
+    std::string Text = "";
+    std::vector<Entry>::iterator currentCol;
+
+    data = stbi_load(p.c_str(), &width, &height, &channels, 0);
+    // if data doesnt exist or doesnt work
+    if (!data) {
+        geode::createQuickPopup(
+            "Error",
+            "Failed to load image!\nIf your art refuses to import then join my discord to get help and make sure to send this error message.\nFile path: " + p,
+            "OK", "Get help",
+            [](auto, bool btn2) {
+                if (btn2) {
+                    web::openLinkInBrowser("https://celestialgecko.github.io/discord/");
+                }
+            }
+        );
+        stbi_image_free(data);
+        data = nullptr;
+        return;
+    }
+
+    for (int y = height - 1; y >= 0; --y) {
+        for (int x = 0; x < width; ++x) {
+
+			uint8_t tR = data[(y * width + x) * channels];
+			uint8_t tG = data[(y * width + x) * channels + 1];
+			uint8_t tB = data[(y * width + x) * channels + 2];
+
+			currentCol = findColour(tR, tG, tB);
+            if(currentCol == ImageColours.end()) {
+                newColour(tR, tG, tB, x, y);
+            }
+            else {
+                addToExistingColour(currentCol, x, y);
+			}
+        }
+    }
+
+	makeTextString();
+
+    objString = objInLevel.str();
+    objString.pop_back();
+
+    //// adds the new objects to the level and then prompts the user
+    LevelEditorLayer* editorLayer = LevelEditorLayer::get();
+    editorLayer->createObjectsFromString(objString.c_str(), true, true);
+    FLAlertLayer::create("Success!", "Art was imported", "OK")->show();
+
+    stbi_image_free(data);
+    data = nullptr;
+	ImageColours.clear();
+    // this is too scary for me not to check
+    closeMenu();
+
+}
+
+
+
+
+
+// encodes a string to base 64, used for GD text objects
+std::string CreateArt::base64Encode(const std::string& in) const {
+    std::string out;
+    int val = 0, valb = -6;
+    for (unsigned char c : in) {
+        val = (val << 8) + c;
+        valb += 8;
+        while (valb >= 0) {
+            out.push_back(base64Char[(val >> valb) & 0x3F]);
+            valb -= 6;
+        }
+    }
+    if (valb > -6) out.push_back(base64Char[((val << 8) >> (valb + 8)) & 0x3F]);
+    while (out.size() % 4) out.push_back('=');
+    return out;
 }
 
 // places the art, will choose a specific method base on settings
@@ -410,6 +558,8 @@ bool CreateArt::comparePixels(uint8_t r1, uint8_t g1, uint8_t b1, uint8_t r2, ui
         && (std::abs(g1 - g2) <= tolerance)
         && (std::abs(b1 - b2) <= tolerance);
 }
+
+
 
 // formats the hasv values in a way that GD can understand
 void CreateArt::formatHSV(float r, float g, float b, std::string& objColour) const {
