@@ -42,21 +42,19 @@ public:
         EditorUI::createMoveMenu();
 
         // formats the button
-        CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
-        // gives it a fun name
-        btn->setID("importArtButton"_spr);
+        CCMenuItemSpriteExtra* btn;
 
 
         // this stops it from breaking other mods however I dont want my mod fully dependent on this
         if(Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
-
-            //auto btn2 = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
-            //    MyEditorUI::onPixelArtImport;
-            //});
+            btn = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
+                this->onPixelArtImport(nullptr);
+                });
             alpha::editor_tabs::getMode(alpha::editor_tabs::Edit)->getTab("edit")->getNode()->addItem(btn);
-
 		}
         else {
+            btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
+            btn->setID("importArtButton"_spr);
             if (!m_editButtonBar) {
 
                 CCNode* menu = nullptr;
