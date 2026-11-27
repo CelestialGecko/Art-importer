@@ -35,25 +35,29 @@ public:
         }
     }
 
-    // creates the button that is used to open the pixel art importer
-    void createMoveMenu() {
-        
-        
-        EditorUI::createMoveMenu();
 
-        // formats the button
-        CCMenuItemSpriteExtra* btn;
+    bool init(LevelEditorLayer* layer) {
+        if (!EditorUI::init(layer)) return false;
 
-
-        // this stops it from breaking other mods however I dont want my mod fully dependent on this
-        if(Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
-            btn = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
+        if (Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
+            CCMenuItemSpriteExtra* btn = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
                 this->onPixelArtImport(nullptr);
                 });
             alpha::editor_tabs::getMode(alpha::editor_tabs::Edit)->getTab("edit")->getNode()->addItem(btn);
-		}
-        else {
-            btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
+        }
+
+        return true;
+    }
+
+    // creates the button that is used to open the pixel art importer
+    void createMoveMenu() {
+        
+        EditorUI::createMoveMenu();
+
+        // this stops it from breaking other mods however I dont want my mod fully dependent on this
+        if(!Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
+            // formats the button
+            CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
             btn->setID("importArtButton"_spr);
             if (!m_editButtonBar) {
 
@@ -75,6 +79,6 @@ public:
                 // reload it
                 m_editButtonBar->reloadItems(rows, cols);
             }
-        }
+		}
     }
 };
