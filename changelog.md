@@ -1,3 +1,7 @@
+## v2.1.1
+
+* Now on 2.2091
+
 ## v2.1.0
 
 * New optimisation option that adds a background to images that are not transparent.
@@ -14,7 +18,7 @@
 ## v2.0.3
 
 * No longer crashes on android when size limit is reached.
-* No longer chrashes on android when image is invalid.
+* No longer crashes on android when image is invalid.
 
 ## v2.0.2
 
