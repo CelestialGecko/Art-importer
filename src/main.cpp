@@ -3,7 +3,7 @@
 #include <functional>
 #include <Geode/modify/CCLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
-
+#include <alphalaneous.editortab_api/API.hpp>
 
 using namespace geode::prelude;
 
@@ -45,27 +45,38 @@ public:
         CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
         // gives it a fun name
         btn->setID("importArtButton"_spr);
-        // add a new button to the editor's UI without a custom image for now
 
-        if (!m_editButtonBar) {
 
-            CCNode* menu = nullptr;
-			menu = m_dpadMoveNode->getChildByIndex(4);
-			auto warp = menu->getChildByTag(47);
-			auto snap = menu->getChildByTag(44);
-            btn->setPosition({ snap->getPositionX(), warp->getPositionY() });
-            menu->addChild(btn);
-            menu->updateLayout();
+        // this stops it from breaking other mods however I dont want my mod fully dependent on this
+        if(Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
 
-        }
+            //auto btn2 = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
+            //    MyEditorUI::onPixelArtImport;
+            //});
+            alpha::editor_tabs::getMode(alpha::editor_tabs::Edit)->getTab("edit")->getNode()->addItem(btn);
+
+		}
         else {
-            // add a new button to the editor's UI without a custom image for now
-            m_editButtonBar->m_buttonArray->addObject(btn);
-            // fetch rows and columns settings from the game manager
-            int rows = GameManager::sharedState()->getIntGameVariable("0049");
-            int cols = GameManager::sharedState()->getIntGameVariable("0050");
-            // reload it
-            m_editButtonBar->reloadItems(rows, cols);
+            if (!m_editButtonBar) {
+
+                CCNode* menu = nullptr;
+                menu = m_dpadMoveNode->getChildByIndex(4);
+                auto warp = menu->getChildByTag(47);
+                auto snap = menu->getChildByTag(44);
+                btn->setPosition({ snap->getPositionX(), warp->getPositionY() });
+                menu->addChild(btn);
+                menu->updateLayout();
+
+            }
+            else {
+                // add a new button to the editor's UI without a custom image for now
+                m_editButtonBar->m_buttonArray->addObject(btn);
+                // fetch rows and columns settings from the game manager
+                int rows = GameManager::sharedState()->getIntGameVariable("0049");
+                int cols = GameManager::sharedState()->getIntGameVariable("0050");
+                // reload it
+                m_editButtonBar->reloadItems(rows, cols);
+            }
         }
     }
 };

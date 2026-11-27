@@ -12,16 +12,6 @@ void CreateArt::importArt() {
                     this->placeArt(opt.value().string());
                 }
                 else {
-                    geode::createQuickPopup(
-                        "Error",
-                        "No value present!\nIf your art refuses to import then join my discord to get help and make sure to send this error message.",
-                        "OK", "Get help",
-                        [](auto, bool btn2) {
-                            if (btn2) {
-                                web::openLinkInBrowser("https://celestialgecko.github.io/discord/");
-                            }
-                        }
-                    );
                 }
             }
         }

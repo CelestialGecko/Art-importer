@@ -11,6 +11,12 @@
 	"name": "Art importer",
 	"developer": "Grian",
 	"description": "This will import pixel art",
+	"dependencies": {
+		"alphalaneous.editortab_api": {
+			"version": "v3.0.0-beta.5",
+			"required": false
+		}
+	},
 	"links": {
 		"community": "https://celestialgecko.github.io/discord/",
 		"source": "https://github.com/CelestialGecko/Art-importer",
