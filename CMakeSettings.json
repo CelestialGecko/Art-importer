@@ -4,7 +4,7 @@
       "name": "gecko",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
-      "inheritEnvironments": [ "windows-clang-x64" ],
+      "inheritEnvironments": [ "clang_cl_x64" ],
       "buildRoot": "${projectDir}\\build",
       "installRoot": "${projectDir}\\build",
       "intelliSenseMode": "windows-clang-x64",

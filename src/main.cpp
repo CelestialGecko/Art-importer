@@ -14,6 +14,7 @@ public:
     struct Fields {
         CreateArt artCreator;
         MainMenu* menu = nullptr;
+        std::string bCol = Mod::get()->getSettingValue<std::string>("Button-Colour");
     };
 
     // triggered when button is clicked
@@ -35,14 +36,16 @@ public:
         }
     }
 
-
+    // if the player has this dependency then my other codes messes up everyone else buttons
     bool init(LevelEditorLayer* layer) {
         if (!EditorUI::init(layer)) return false;
 
         if (Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
-            CCMenuItemSpriteExtra* btn = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), 5, [this](auto*) {
+            CCMenuItemSpriteExtra* btn = alpha::editor_tabs::createEditButton(CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr), getButtonColour(), [this](CCObject*) {
                 this->onPixelArtImport(nullptr);
                 });
+            btn->setID("pixel-art-import-button");
+            btn->setTag(67);
             alpha::editor_tabs::getMode(alpha::editor_tabs::Edit)->getTab("edit")->getNode()->addItem(btn);
         }
 
@@ -56,16 +59,28 @@ public:
 
         // this stops it from breaking other mods however I dont want my mod fully dependent on this
         if(!Loader::get()->isModLoaded("alphalaneous.editortab_api")) {
-            // formats the button
-            CCMenuItemSpriteExtra* btn = this->getSpriteButton("pixelArtToolBtn.png"_spr, menu_selector(MyEditorUI::onPixelArtImport), nullptr, 0.9f);
-            btn->setID("importArtButton"_spr);
-            if (!m_editButtonBar) {
 
-                CCNode* menu = nullptr;
-                menu = m_dpadMoveNode->getChildByIndex(4);
-                auto warp = menu->getChildByTag(47);
-                auto snap = menu->getChildByTag(44);
+
+            // credit to alphalaneous for this format as I was too busy to think of my own
+            cocos2d::CCSprite* sp = CCSprite::createWithSpriteFrameName("pixelArtToolBtn.png"_spr);
+            CCSize size = sp->getContentSize();
+            float fit = std::min(std::min(32.f / size.width, 32.f / size.height), 1.f);
+
+            ButtonSprite* btnS = ButtonSprite::create(sp, 40, 0, 40.f, fit, true, fmt::format("GJ_button_0{}.png", getButtonColour()).c_str(), false, 40.f);
+            CCMenuItemSpriteExtra* btn = CCMenuItemExt::createSpriteExtra(btnS, [this](CCObject*) {
+                this->onPixelArtImport(nullptr);
+                });
+
+            btn->setID("pixel-art-import-button");
+            btn->setTag(67);
+
+            if (!m_editButtonBar) {
+                CCNode* menu = m_dpadMoveNode->getChildByID("edit-buttons");
+                auto warp = menu->getChildByID("warp-button");
+                auto snap = menu->getChildByID("rotate-snap-button");
                 btn->setPosition({ snap->getPositionX(), warp->getPositionY() });
+				btn->setScale(snap->getScale());
+				btn->m_baseScale = snap->getScale();
                 menu->addChild(btn);
                 menu->updateLayout();
 
@@ -80,5 +95,22 @@ public:
                 m_editButtonBar->reloadItems(rows, cols);
             }
 		}
+    }
+
+
+
+    int getButtonColour() {
+        if (m_fields->bCol == "pink") {
+            return 3;
+        }
+        else if (m_fields->bCol == "blue") {
+            return 2;
+        }
+        else if (m_fields->bCol == "green") {
+            return 1;
+        }
+        else {
+            return 5;
+        }
     }
 };

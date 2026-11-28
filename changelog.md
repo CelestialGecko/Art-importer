@@ -1,3 +1,9 @@
+## v2.2.0
+
+* Button placement is cleaner
+* Revamped the button system
+* You can now choose the button colour - using my time on the important stuff
+
 ## v2.1.1
 
 * Now on 2.2091

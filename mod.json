@@ -6,7 +6,7 @@
 		"android": "*",
 		"ios": "*"
 	},
-	"version": "v2.1.1",
+	"version": "v2.2.0",
 	"id": "grian.art_importer",
 	"name": "Art importer",
 	"developer": "Grian",
@@ -88,6 +88,19 @@
 			"description": "Will remove the default size limit for images that can be imported.\nCan cause <cr>crashes</c> if the image is too big so is not recommended.",
 			"type": "bool",
 			"default": false
+		},
+		"Fun": {
+			"name": "Fun",
+			"description": "Cosmetic stuff that serves no purpose.",
+			"type": "title"
+		},
+
+		"Button-Colour": {
+			"type": "string",
+			"name": "Button Colour",
+			"description": "The colour of the button in the editor. Re open the level editor to apply the changes.",
+			"default": "pink",
+			"one-of": [ "pink", "blue", "green", "grey" ]
 		}
 	},
 	"tags": [

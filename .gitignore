@@ -57,5 +57,5 @@ build-*/
 # Visual Studio
 .vs/
 
-# CMake
-.cmakesettings
+# My own system has it in a different spot
+CMakeSettings.json
