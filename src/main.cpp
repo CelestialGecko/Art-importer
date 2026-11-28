@@ -45,7 +45,7 @@ public:
                 this->onPixelArtImport(nullptr);
                 });
             btn->setID("pixel-art-import-button");
-            btn->setTag(67);
+            //btn->setTag(67);
             alpha::editor_tabs::getMode(alpha::editor_tabs::Edit)->getTab("edit")->getNode()->addItem(btn);
         }
 
@@ -72,7 +72,7 @@ public:
                 });
 
             btn->setID("pixel-art-import-button");
-            btn->setTag(67);
+            //btn->setTag(67);
 
             if (!m_editButtonBar) {
                 CCNode* menu = m_dpadMoveNode->getChildByID("edit-buttons");
