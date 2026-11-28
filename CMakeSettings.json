@@ -1,0 +1,28 @@
+﻿{
+  "configurations": [
+    {
+      "name": "gecko",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "windows-clang-x64" ],
+      "buildRoot": "${projectDir}\\build",
+      "installRoot": "${projectDir}\\build",
+      "intelliSenseMode": "windows-clang-x64",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "CMAKE_C_COMPILER",
+          "value": "C:/Users/Gecko/scoop/apps/llvm/current/bin/clang.exe",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_CXX_COMPILER",
+          "value": "C:/Users/Gecko/scoop/apps/llvm/current/bin/clang++.exe",
+          "type": "STRING"
+        }
+      ]
+    }
+  ]
+}
